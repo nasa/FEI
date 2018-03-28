@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright (c) 2010 Jet Propulsion Laboratory, California Institute of Technology
+   All rights reserved
+   US Government Sponsorship acknowledged. 06-08-2010.
+
+   This schema defines FEI domain file format
+     
+   @author T. Huang {Thomas.Huang@jpl.nasa.gov}, 
+           R. Pavlovsky {richard.pavlovsky@jpl.nasa.gov}
+           N. Toole {nicholas.toole@jpl.nasa.gov}
+           
+   @version $Id: domain.xsd,v 1.14 2010/08/11 16:08:36 awt Exp $
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fei="http://mdms.jpl.nasa.gov/schema/fei" targetNamespace="http://mdms.jpl.nasa.gov/schema/fei" elementFormDefault="qualified">
+    <xs:complexType name="serverType">
+        <!-- Definition of an FEI server host information -->
+        <xs:sequence>
+            <xs:element name="host" type="xs:string"/>
+            <xs:element name="port" type="xs:integer"/>
+            <xs:element name="auth" type="xs:string"/>
+            <xs:element name="communication" type="xs:string"/>
+            <xs:element name="fileType" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="groupType">
+        <!-- Definition of an FEI group information -->
+        <xs:sequence>
+            <xs:element name="server" type="fei:serverType" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="vft" type="fei:serverType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="fileType" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="groupURI" type="xs:anyURI" use="optional"/>
+        <xs:attribute name="dynamicTypes"  type="xs:boolean" use="optional"/>
+    </xs:complexType>
+    <xs:complexType name="domainType">
+        <!-- Definition of a domain element -->
+        <xs:sequence>
+            <xs:element name="globalURI" type="xs:anyURI" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="defaultGroup" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="globalDynamicTypes" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="group" type="fei:groupType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element name="domain" type="fei:domainType"/>
+</xs:schema>

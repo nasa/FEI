@@ -1,0 +1,806 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!-- $Id: clienthelp.xml,v 1.43 2010/06/30 16:39:09 ntt Exp $ -->
+<KomodoHelp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <!-- xsi:noNamespaceSchemaLocation = 'clienthelp.xsd'> -->
+    <desc> Defines Komodo command help dictionary for use by Komodo clients. </desc>
+    <cmd type="settings" name="echo">
+        <desc>Session setting. Enables command output to terminal and log files.
+            Setting echo off disables command output which is useful when using
+            batch files that contain login information. Default is on.</desc>
+        <usage>set echo {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="abort">
+        <desc>Session setting. During processing of batch file abort when
+            encountered an error. Default is off.</desc>
+        <usage>set abort {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="safeRead">
+        <desc>Session setting. When doing gets, write to a shadow directory
+            while tranfering file, then move to final destination. Default is
+            off.</desc>
+        <usage>set safeRead {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="computeChecksum">
+        <desc>Session setting. Compute a checksum before and after files are
+            transmitted. If not the same, abort transaction and issue and error
+            message. Default is off.</desc>
+        <usage>set computeChecksum {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="autoDelete">
+        <desc>Session setting. Deletes the local copy of a file after adding or
+            replacing it in the FEI5 DB. Default is off.</desc>
+        <usage>set autoDelete {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="log" see_also="logFile">
+        <desc>Session setting. When on, fei commands and responses are logged to
+            a file. Default is on, but if log file is not assigned, there is no
+            logging</desc>
+        <usage>set log {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="receipt">
+        <desc>Session setting. When getting a file, a confirmation of receipt is
+            logged in the database. Default is off.</desc>
+        <usage>set receipt {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="replaceFile">
+        <desc>Session setting. By default it won't overwrite a file in current
+            working directory. Default is off.</desc>
+        <usage>set replaceFile {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="preserve">
+        <desc>Session setting. By default it won't overwrite the modification date 
+             of a file in current in database for move. Default is on.</desc>
+        <usage>set preserve {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="restart">
+        <desc>Session setting. When on, getAfter command will track date of last
+            download for given file type. Default is off.</desc>
+        <usage>set restart {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="test">
+        <desc>Session setting. When executing a batch file, check commands
+            syntax but do not execute. Default is off.</desc>
+        <usage>set test {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="timer">
+        <desc>Session setting. When turned on each command is timed. Default is
+            off.</desc>
+        <usage>set timer {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="verbose">
+        <desc>Session setting. Include files' size in bytes and date and time
+            file was received along with the name. Default is off.</desc>
+        <usage>set verbose {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="veryVerbose">
+        <desc>Session setting. Along with verbose information show any comment,
+            archive note or checksum associated with a file. Default is off.</desc>
+        <usage>set veryVerbose {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="versionFile">
+        <desc>Session setting. Creates versioning of existing files by appending
+        filename with version information.  Default is off.</desc>
+        <usage>set versionFile {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="diff">
+        <desc>Session setting. Performs diff between existing file
+        and new file to verify they are differnt before replacing
+        or versioning.  Default is off.</desc>
+        <usage>set diff {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="settings" name="replicate">
+        <desc>Session setting. Enables replication, using
+        the remote location of file from server as the local 
+        location on client.  Default is off.</desc>
+        <usage>set replicate {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="set">
+        <desc>Set session settings. Parameters: abort, autoDelete,
+            computeChecksum, log, receipt, replaceFile, restart, safeRead, test,
+            timer, verbose, veryVerbose, echo, preserve, replicate, diff</desc>
+        <usage>set &lt;parameter&gt; {on,off}</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="changePassword">
+        <desc>Change user password in the database</desc>
+        <usage>Interactive only, will be prompted</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="help">
+        <desc>This help. help &lt;command name&gt; returns info on
+            specific command. help types lists command types</desc>
+        <usage>help [{&lt;command name&gt;,&lt;command
+            type}&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="version" shortcut="v">
+        <desc>Show version of FEI client</desc>
+        <usage>version</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="showDomainFile">
+        <desc>Echos current domain file to screen</desc>
+        <usage>showDomainFile</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="pwd">
+        <desc>Show local working directory</desc>
+        <usage>pwd</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="ls">
+        <desc>List contents of local directory</desc>
+        <usage>ls</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="login">
+        <desc>Enter user name and password, will prompt interactively if not in
+            batch mode</desc>
+        <usage>login [&lt;name&gt;] [&lt;password&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="logFile">
+        <desc>Assign name of a log file.</desc>
+        <usage>logFile &lt;file&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="dateFormat">
+        <desc>Set or print the date/time format.</desc>
+        <usage>dateFormate [&quot;&lt;format&gt;&quot;]</usage>
+        <params>
+            <param name="format">
+                <desc>Date format string.  See SimpleDateFormat javadoscs 
+                    for examples.</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="utility" name="logCmds">
+        <desc>Log commands to a file</desc>
+        <usage>logCmds &lt;file&gt;</usage>
+        <params>
+            <param name="file">
+                <desc>The name of the file to which commands are logged</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="utility" name="pause">
+        <desc>Stops executing a batch script until the &lt;return&gt;
+            key is pressed</desc>
+        <usage>pause</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="cd">
+        <desc>Change local working directory</desc>
+        <usage>cd [&lt;local directory&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="bye" alt="quit, exit">
+        <desc>Exit fei client</desc>
+        <usage>bye</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="batch">
+        <desc>Read a sequence of FEI commands from a file.</desc>
+        <usage>batch &lt;file name&gt; [{repeatAt hh:mm {am,pm},
+            repeatEvery hh:mm [hh:mm {am,pm}}]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="unlockFileType">
+        <desc>Unlock current file type for given group or owner</desc>
+        <usage>unlockFileType {group,owner}</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="showTypes">
+        <desc>Show available file types</desc>
+        <usage>showTypes</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="showSince">
+        <desc>Show files added to current file type since specified time
+            (Deprecated)</desc>
+        <usage>showSince &lt;yyyy-MM-ddThh:mm:ss.SSS&gt; [invoke
+            "&lt;system command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="showVFT">
+        <desc>Show available vfts. If vft is specified, show details.</desc>
+        <usage>showVFT [&lt;vft name&gt;]
+            [&lt;yyyy-MM-ddThh:mm:ss.SSS&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="showLatest">
+        <desc>Show latest files added to current file type</desc>
+        <usage>showLatest [&lt;file name expression&gt;] [invoke
+            "&lt;system command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="showCapabilities">
+        <desc>Show user's capabilities for given file type</desc>
+        <usage>showCapabilities &lt;file type&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="showBetween">
+        <desc>Show files added to current file type during specified time range</desc>
+        <usage>showBetween &lt;yyyy-MM-ddThh:mm:ss.SSS&gt; and
+            &lt;yyyy-MM-ddThh:mm:ss.SSS&gt; [invoke "&lt;system
+            command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="show" shortcut="s">
+        <desc>Show registered files in current file type</desc>
+        <usage>show &lt;file name expression&gt; [invoke "&lt;system
+            command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="replace" shortcut="r">
+        <desc>Replace a registered file</desc>
+        <usage>replace &lt;file name&gt;
+            [&lt;&quot;comment&quot;&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="rename" shortcut="n">
+        <desc>Rename a registered file</desc>
+        <usage>rename &lt;original file name&gt; &lt;new file
+            name&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="lockFileType">
+        <desc>Lock current file type to prevent modification</desc>
+        <usage>lockFileType [{group,owner}]</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="setReference"
+        see_also="addVFT, addReference, updateVFT">
+        <desc>Reference a file in the FEI5 DB</desc>
+        <usage>setReference &lt;vft name&gt; &lt;reference
+            name&gt; [&lt;file type&gt; &lt;file name&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="updateVFT" see_also="addVFT, setReference">
+        <desc>Update VFT by setting references to point to new files.</desc>
+        <usage>updateVFT &lt;vft name&gt;
+            [&quot;&lt;comment&gt;&quot;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="delete" shortcut="d">
+        <desc>Delete registered file(s)</desc>
+        <usage>delete &lt;file name expression&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="makeDomainFile">
+        <desc>Make new domain file from database information</desc>
+        <usage>makeDomainFile &lt;file name&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="use">
+        <desc>Change current file type in session. The server group parameter is
+            optional, defaultGroup is specified in domain file.</desc>
+        <usage>use [&lt;server group&gt;:]&lt;file type&gt;</usage>
+        <params>
+            <param name="server group">
+                <desc>(Optional) FEI server group name. DefaultGroup element in
+                    domain file specifies group if not used.</desc>
+            </param>
+            <param name="file type">
+                <desc>FEI file type name</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="filetype" name="comment">
+        <desc>Update comment for the specified file</desc>
+        <usage>comment &lt;file name&gt;
+            &lt;&quot;comment&quot;&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="checksum">
+        <desc>Computes checksum on a local file</desc>
+        <usage>checksum &lt;local file name&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="archive">
+        <desc>Update archive information for the specified file</desc>
+        <usage>archive &lt;file name&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="getLatest">
+        <desc>Get latest file for current file type. If external system process
+            invocation is specified , then it executes the system command for
+            each file received.</desc>
+        <usage>getLatest [&lt;file name expression&gt;] [invoke
+            "&lt;system command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="getSince">
+        <desc>Get files added to current file type since given date. If external
+            system process invocation is specified, then it executes the system
+            command for each file received. (Deprecated)</desc>
+        <usage>getSince &lt;yyyy-MM-ddThh:mm:ss.SSS&gt; [invoke
+            "&lt;system command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="getBetween">
+        <desc>Get files added to current file type during specified time period.
+            If external system process invocation is specified, then it executes
+            the system command for each file received.</desc>
+        <usage>getBetween &lt;yyyy-MM-ddThh:mm:ss.SSS&gt; and
+            &lt;yyyy-MM-ddThh:mm:ss.SSS&gt; [invoke "&lt;system
+            command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="get" shortcut="g">
+        <desc>Get one or more files from current file type. If external system
+            process invocation is specified, then it executes the system command
+            for each file received.</desc>
+        <usage>get &lt;file name expression&gt; [invoke "&lt;system
+            command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="add" shortcut="a">
+        <desc>Add files matching file name expression to current file type</desc>
+        <usage>add &lt;file name expression&gt;
+            [&lt;&quot;comment&quot;&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="addAndRef">
+        <desc>Add files matching file name expression to current file type. Each
+            file's name is made unique, and a vftReference, using the source
+            file name is added to the given VFT. All</desc>
+        <usage>addAndRef &lt;file name expression&gt;
+            &lt;vft&gt; &lt;link directory&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="setDefaultGroup">
+        <desc>Set the default server group.</desc>
+        <usage>setDefaultGroup &lt;group name&gt;</usage>
+        <params>
+            <param name="group name">
+                <desc>FEI server group name</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="admin" name="addFileType">
+        <desc>Create a new file type in the FEI5 DB. All parameters are
+            mandatory.</desc>
+        <usage>addFileType &lt;name&gt; &lt;directory&gt;
+            &lt;&quot;comment&quot;&gt;
+            &lt;spaceReserved&gt; &lt;threshold&gt;
+            &lt;qaInterval&gt; &lt;checksum&gt;
+            &lt;logDeleteRecord&gt; &lt;receipt&gt;
+            &lt;xmlSchema&gt;</usage>
+        <params>
+            <param name="xmlSchema">
+                <desc>Whether xml schema validation must be performed. Must be
+                    &quot;t&quot; or &quot;f&quot;</desc>
+            </param>
+            <param name="receipt">
+                <desc>Whether file transfer receipt will automatically be recorded.
+                      Must be &quot;t&quot; or &quot;f&quot;</desc>
+            </param>
+            <param name="logDeleteRecord">
+                <desc>Whether file record will remain in database after delete. 
+                      Must be &quot;t&quot; or &quot;f&quot;</desc>
+            </param>
+            <param name="checksum">
+                <desc>Whether checksum wil be performed on files. Must be
+                    &quot;t&quot; or &quot;f&quot;</desc>
+            </param>
+            <param name="qaInterval">
+                <desc>Can be &quot;null&quot; in which case 0 is
+                assumed</desc>
+            </param>
+            <param name="threshold">
+                <desc>Can be &quot;null&quot;, in which case default of
+                    64 MB is assumed</desc>
+            </param>
+            <param name="spaceReserved">
+                <desc>Amount of storage allocated. Can be
+                    &quot;null&quot;, in which case default of 128 MB is
+                    assumed</desc>
+            </param>
+            <param name="comment">
+                <desc>Quoted comment</desc>
+            </param>
+            <param name="name">
+                <desc>File type name</desc>
+            </param>
+            <param name="directory">
+                <desc>Fully qualified path where files will be sotre in the file
+                    system</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="admin" name="addFileTypeToRole">
+        <desc>Add a file type to an access role</desc>
+        <usage>addFileTypeToRole &lt;file type&gt; &lt;role&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="addVFT">
+        <desc>Create a new vft</desc>
+        <usage>addVFT &lt;name&gt;
+            [&lt;&quot;comment&quot;&gt;]</usage>
+        <params>
+            <param name="name">
+                <desc>VFT name</desc>
+            </param>
+            <param name="comment">
+                <desc>Quoted comment (optional)</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="vft" name="addVFTReader">
+        <desc>Allow file system user to read vft</desc>
+        <usage>addVFTReader &lt;virtual file type&gt; &lt;file
+            system user&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="showVFTReaders" see_also="addVFTReader, delVFTReader">
+        <desc>Shows list of file system users allowed to read vft.</desc>
+        <usage>showVFTReaders &lt;virtual file type&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="delVFTReader" see_also="addVFTReader, showVFTReader">
+        <desc>Disallow file system user from reading vft</desc>
+        <usage>delVFTReader &lt;virtual file type&gt; &lt;file
+            system user&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="cancelReference" see_also="addReference, delReference">
+        <desc>Cancel a vft reference change</desc>
+        <usage>cancelReference &lt;vft name&gt; &lt;reference
+            name&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="addReference" see_also="delReference">
+        <desc>Add a reference to a VFT, with optional file system link</desc>
+        <usage>addReference &lt;vft name&gt; &lt;reference
+            name&gt; &lt;link&gt;
+            [&lt;&quot;comment&quot;&gt;]</usage>
+        <params>
+            <param name="reference">
+                <desc>Reference name</desc>
+            </param>
+            <param name="link">
+                <desc>Absolute path of reference</desc>
+            </param>
+            <param name="comment">
+                <desc>Quoted comment (optional)</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="admin" name="addRole">
+        <desc>Create new access role in FEI5 database</desc>
+        <usage>addRole &lt;role&gt; &lt;capabilities list&gt; [&lt;external role&gt;]</usage>
+        <params>
+            <param name="role">
+                <desc>Access role</desc>
+            </param>
+            <param name="capabilities list">
+                <desc>List of capabilities a user may have: add, archive, 
+                    delete, get, locktype, offline, vft, qaaccess, receipt, 
+                    register, rename, replace, replicate, subtype</desc>
+            </param>
+            <param name="external role">
+                <desc>Optional external role name (i.e. for LDAP)</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="admin" name="addUser">
+        <desc>Create a new user in FEI5 database, will prompt interactively if
+            not in batch mode</desc>
+        <usage>addUser &lt;name&gt; &lt;password&gt;
+            [&lt;privilege&gt;] [&quot;p&quot;]</usage>
+        <params>
+            <param name="name">
+                <desc>User name</desc>
+            </param>
+            <param name="password">
+                <desc>User password</desc>
+            </param>
+            <param name="Privilege">
+                <desc>One of &quot;r&quot; (read), &quot;a&quot;
+                    (admin) or &quot;w&quot; (write)</desc>
+            </param>
+            <param name="p">
+                <desc>VFT privilege</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="admin" name="addUserToRole">
+        <desc>Add a user to an access role</desc>
+        <usage>addUserToRole &lt;name&gt; &lt;role&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="connect">
+        <desc>Connect to given server</desc>
+        <usage>connect &lt;server&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="connections">
+        <desc>List current server connections</desc>
+        <usage>connections</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="delFileType">
+        <desc>Delete file type</desc>
+        <usage>delFileType &lt;file type&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="delFileTypeFromRole">
+        <desc>Delete a file type from an access role</desc>
+        <usage>delFileTypeFromRole &lt;file type&gt;
+            &lt;role&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="delVFT" see_also="addVFT">
+        <desc>Delete current vft</desc>
+        <usage>delVFT &lt;vft name&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="delReference" see_also="addReference">
+        <desc>Delete reference file name from vft</desc>
+        <usage>delReference &lt;vft name&gt; &lt;reference
+            name&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="delRole">
+        <desc>Delete an access role from the FEI5 database</desc>
+        <usage>delRole &lt;role&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="delUserFromRole">
+        <desc>Delete a user from an access role</desc>
+        <usage>delUserFromRole &lt;name&gt; &lt;role&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="delUser">
+        <desc>Delete a user form the FEI5 database</desc>
+        <usage>delUser &lt;name&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="dSync">
+        <desc>Sync file system with database</desc>
+        <usage>dSync [&lt;file type&gt;]
+            [&lt;yyyy-MM-ddThh:mm:ss.SSS&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="focus">
+        <desc>Switch connection to given server</desc>
+        <usage>focus &lt;server&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="fSync">
+        <desc>Sync database with file system</desc>
+        <usage>fSync [&lt;file type&gt;]
+            [&lt;yyyy-MM-ddThh:mm:ss.SSS&gt;]</usage>
+        <params/>
+    </cmd> 
+    <cmd type="admin" name="modifyFileType">     
+        <desc>Modifies a setting of a filetype field 
+             field: checksum         value: on / off
+             field: location         value: filetype location path
+             field: logdeleterecord  value: on / off 
+             field: receipt          value: on / off 
+             field: spacereserved    value: size in megabytes 
+             field: threshold        value: size in megabytes </desc>
+        <usage>modifyFileType &lt;filetype&gt; &lt;field&gt; &lt;value&gt;</usage>
+        <params/>
+    </cmd>          
+    <cmd type="admin" name="move">     
+        <desc>Moves files between filetypes within a server group</desc>
+        <usage>move &lt;source filetype&gt; &lt;dest filetype&gt; &lt;file expression&gt;</usage>
+        <params/>
+    </cmd>    
+    <cmd type="admin" name="showConnections">
+        <desc>List users connected to server in focus</desc>
+        <usage>showConnections</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showMemory">
+        <desc>Show JVM total and free memory available</desc>
+        <usage>showMemory</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showRoles">
+        <desc>Show roles. If role is supplied, list role properties.</desc>
+        <usage>showRoles [&lt;role&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showRolesForFileType">
+        <desc>Show roles for given file types. If role is specified, show
+            details.</desc>
+        <usage>showRolesForFileType &lt;file type expression&gt;
+            [&lt;role&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showFiletypesForRole">
+        <desc>Show file types for given role. If filetype expression is specified,
+            shows details for matching types.</desc>
+        <usage>showFiletypesForRole &lt;role&gt; [&lt;filetype expression&gt;]</usage>
+        <params>
+            <param name="role">
+                <desc>Role name</desc>
+            </param>
+            <param name="filetype expresion">
+                <desc>Filetype name or expression</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="admin" name="showRolesForUser">
+        <desc>Show roles for given user.</desc>
+        <usage>showRolesForUser &lt;user&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showUsersForRole">
+        <desc>Show users for given role.</desc>
+        <usage>showUsersForRole [&lt;role&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showServerParameters">
+        <desc>Show server parameters found in the FEI5 database. If server is
+            specified, show only data for that server.</desc>
+        <usage>showServerParameters [&lt;server&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showServers">
+        <desc>Show servers listed in the database</desc>
+        <usage>showServers</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showFileTypes">
+        <desc>Show file types server in focus is managing. If file type expression
+            is specified, show details.</desc>
+        <usage>showFileTypes [&lt;file type expression&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showUsers">
+        <desc>Show user names in the database, if name is provided show user
+            settings.</desc>
+        <usage>showUsers [&lt;name&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="shutdown">
+        <desc>Shutdown server, timeout value must be between 0 and 300 seconds</desc>
+        <usage>shutdown &lt;timeout&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="vft" name="getVFT">
+        <desc>Get files referenced within vft. Optionally restrict to specified
+            date.</desc>
+        <usage>getVFT &lt;vft name&gt;
+            [&lt;yyyy-MM-ddThh:mm:ss.SSS&gt;]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="getAfter">
+        <desc>Get files registered after date given. If no date is given and
+            setting &quot;restart&quot; is on, use date in restart file.
+            If external system process invocation is specified, then it executes
+            the system command for each file received.</desc>
+        <usage>getAfter [&lt;yyyy-MM-ddThh:mm:ss.SSS&gt;] [invoke
+            "&lt;system command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="filetype" name="showAfter">
+        <desc>Show files registered after given date</desc>
+        <usage>showAfter &lt;yyyy-MM-ddThh:mm:ss.SSS&gt; [invoke
+            "&lt;system command&gt;"]</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="exit" alt="quit, bye">
+        <desc>Exit from client</desc>
+        <usage>exit</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="quit" alt="exit, bye">
+        <desc>Quit client</desc>
+        <usage>exit, bye</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="hotboot">
+        <desc>Server reload hotbootable parameters from database</desc>
+        <usage>hotboot</usage>
+        <params/>
+    </cmd>
+    <cmd type="utility" name="history" >
+        <desc>Displays history of recent commands and, when number supplied,
+            executes command at that index of the history.  If number is
+            negative, then the most recent starting from the number is
+            executed.</desc>
+        <usage>history &lt;number&gt;</usage>
+        <params/>
+    </cmd>
+    <cmd type="admin" name="showLocks">
+        <desc>Displays lock values for files. Results can be filtered by
+        supplying expressions for filetype, file name, and a value for the lock.
+        Lock values are: none, get, replace, delete, reserved,
+        link, rename, logdelete, move, movepersist.
+        If no lock value is specified, then any lock other than 'none' is used.
+        </desc>
+        <usage>showlocks &lt;filetype expression&gt; &lt;file name expression&gt;
+                                                      [&lt;lock value&gt;] </usage>
+        <params>
+            <param name="filetype expresion">
+                <desc>Filetype name or expression</desc>
+            </param>
+            <param name="file name expression">
+                <desc>Filename or wildcard expression</desc>
+            </param>
+            <param name="lock value">
+                <desc>Returns files that match lock value (optional)</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="admin" name="logMessage">
+        <desc>Writes message from client to server log.</desc>
+        <usage>logMessage &quot;&lt;message string&gt;&quot;</usage>
+        <params>
+            <param name="message string">
+                <desc>Quoted message string</desc>
+            </param>
+        </params>
+    </cmd>
+    <cmd type="admin" name="modifyRole">     
+        <desc>Modifies the capabilities associated with a role.</desc>
+        <usage>modifyRole &lt;role&gt; &lt;operation&gt; &lt;capabilities list&gt;</usage>
+        <params>
+            <param name="role">
+                <desc>Role name</desc>
+            </param>
+            <param name="operation">
+                <desc>One of: add, delete, set</desc>
+            </param>
+            <param name="capabilities list">
+                <desc>List of capabilities a user may have: add, archive, 
+                    delete, get, locktype, offline, vft, qaaccess, receipt,
+                    register, rename, replace, replicate, subtype</desc>
+            </param>
+        </params>
+    </cmd> 
+    <cmd type="admin" name="modifyUserAccess">     
+        <desc>Modifies the access level associated with a user.</desc>
+        <usage>modifyUserAccess &lt;user&gt; &lt;access level&gt; {on,off}</usage>
+        <params>
+            <param name="user">
+                <desc>User name</desc>
+            </param>
+            <param name="access role">
+                <desc>One of: admin, read, write, vft</desc>
+            </param>            
+        </params>
+    </cmd>     
+    <cmd type="admin" name="setlock">     
+        <desc>Sets the lock values of a file.
+              Lock values are: none, get, replace, delete, reserved,
+              link, rename, logdelete, move, movepersist.
+        </desc>
+        <usage>setlock &lt;filetype&gt; &lt;file name&gt; 
+             &lt;lock value&gt;</usage>
+        <params>
+            <param name="filetype">
+                <desc>Filetype name</desc>
+            </param>
+            <param name="filename">
+                <desc>File name</desc>
+            </param>
+            <param name="lock value">
+                <desc>New lock value for file</desc>
+            </param>             
+        </params>
+    </cmd> 
+</KomodoHelp>

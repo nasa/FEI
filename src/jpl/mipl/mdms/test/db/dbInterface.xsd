@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- CVS: $Id: dbInterface.xsd,v 1.1.1.1 2003/01/25 02:18:52 txh Exp $ -->
+
+<!-- MDMS XML Schema Definition for dbInterface.xml file -->
+
+<!-- Copyright 2001, California Institute of Technology. -->
+<!-- ALL RIGHTS RESERVED.                                -->
+<!-- U.S. Government Sponsorship acknowledge. 6/29/2000. -->
+<!-- MIPL Data Management System (MDMS).                 -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://sorrento.jpl.nasa.gov"
+    targetNamespace="http://sorrento.jpl.nasa.gov"
+    elementFormDefault="qualified"
+>
+
+<xs:element name="database">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element ref="connection" />
+            <xs:element ref="setup" />
+            <xs:element ref="showRecords" />
+            <xs:element ref="deleteRecord" />
+            <xs:element ref="simpleProc" />
+            <xs:element ref="cleanup" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="connection">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element ref="jdbc" />
+            <xs:element ref="jndi" />
+            <xs:attribute name="title" type="xs:string" use="required" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="jdbc">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="driver" maxOccurs="1" type="xs:string" />
+            <xs:element name="url" maxOccurs="1" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="jndi">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="host" maxOccurs="1" type="xs:string" />
+            <xs:element name="port" maxOccurs="1" type="xs:string" />
+            <xs:element name="searchBase" maxOccurs="1" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="setup">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element ref="defineTables" />
+            <xs:element ref="defineProcedures" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="defineTables">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="prep" maxOccurs="unbounded" type="xs:string" />
+            <xs:element name="statement" maxOccurs="unbounded" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="defineProcedures">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="prep" maxOccurs="unbounded" type="xs:string" />
+            <xs:element name="statement" maxOccurs="unbounded" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="showRecords">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="statement" maxOccurs="1" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="deleteRecord">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="statement" maxOccurs="1" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="simpleProc">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="procedure" maxOccurs="unbounded" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="cleanup">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element ref="dropTables" />
+            <xs:element ref="dropProcedures" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="dropTables">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="statement" maxOccurs="unbounded" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="dropProcedures">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="statement" maxOccurs="unbounded" type="xs:string" />
+        </xs:sequence>
+    </xs:complexType>
+</xs:element>
+
+</xs:schema>

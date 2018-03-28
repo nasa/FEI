@@ -1,0 +1,685 @@
+#!/usr/bin/perl -w 
+
+## FEI file filter driver.  Accepts a filename and criteria
+## script name and evaluates the file using that script.
+## Can be invoked using list files for filenames and criteria
+## See usage for more information.
+
+## Author: Nicholas Toole (Nicholas.T.Toole@jpl.nasa.gov)
+## Date: February 1, 2006
+## Version: 1.0
+## Dependencies: Criteria scripts with names passed in as parameter
+
+#
+### ==================================================================== ###
+#                                                                          #
+#  The File Exchange Interface (FEI) Configuration Functions               #
+#                                                                          #
+#  Function:                                                               #
+#  FEI file filter driver.  Accepts a filename and criteria                #
+#  script name and evaluates the file using that script.                   #
+#  Can be invoked using list files for filenames and criteria              #
+#  See usage for more information..                                        # 
+#                                                                          #
+#  Usage: testFeiFile [ -f filename | -l fileList ] [ -c criteriaName |    # 
+#         -q queryList ] [ -o | -a ] [ -s ] [ -h ] [ feiCommandWithArgs ]  #
+#                                                                          # 
+#       -f filename      - Name of file to test                            #
+#       -c criteriaName  - Name of criterion script to invoke              #
+#       -l fileList      - File containing list of files to test           #
+#       -q queryList     - File containing list of criteria to use         #
+#       -a               - And flag. File is successful if it passed       #
+#                          all criteria. (default)                         #
+#       -o               - Or flag. File is successful if it passed        #
+#                          at least one criterion.                         #
+#       -s               - Prints status of each file and criteria         #
+#       -h               - Prints help message and exits                   #
+#       feiCommand...    - Any FEI command that accepts filenames          #
+#                          as last arguments.  This will only              #
+#                          be invoked if files pass criteria.              #
+#                                                                          #
+#       Option constaints:                                                 #
+#       Either one or more -f options XOR one -l option.                   #
+#       Either one of more -c options XOR one -q option.                   #
+#                                                                          #
+#       Returns: If no feiCommand is supplied, then return value of        #
+#       script is 0 is all files passed all criteria, 1 otherwise. If      #
+#       feiCommand is supplied and all files passed, exit value of fei     #
+#       command; 1 otherwise.                                              #
+#                                                                          #
+#                                                                          #
+#  Example: $ testFeiFile.pl -f product.img -c /filter/script.1            #
+#           Will compare filename 'product.img' using the criterion        #
+#           script '/filter/script.1', returns 0 if successful, 1          #
+#           otherwise.                                                     #
+#                                                                          #
+#  Copyright (c) 2006 by the California Institute of Technology.      #
+#  ALL RIGHTS RESERVED.  United States Government Sponsorship         #
+#  acknowledged. Any commercial use must be negotiated with the       #
+#  Office of Technology at the California Institute of Technology.    #
+#                                                                     #
+#  The technical data in this document (or file) is controlled for    #
+#  export under the Export Administration Regulations (EAR), 15 CFR,  #
+#  Parts 730-774. Violations of these laws are subject to fines and   #
+#  penalties under the Export Administration Act.                     #
+#                                                                          #
+#                                                                          #
+#  Created:                                                                #
+#  Mar. 02, 2006 by Nicholas Toole {nicholas.toole@jpl.nasa.gov}           #
+#                                                                          #
+#                                                                          #
+### ==================================================================== ###
+#
+# $Id: fei5guardian,v 1.4 2006/10/03 02:18:18 ntt Exp $
+#
+
+use strict;
+use File::Basename;
+use Getopt::Std;
+use File::Spec;
+
+# the globals constants
+use constant DEFAULT_NUM_CLEINTS => 1;
+use constant DEFAULT_OUTPUT_ROOT => ".";
+use constant QTRUE         => 0;
+use constant QFALSE        => 1;
+use constant QFUNCTION_AND => "AND";
+use constant QFUNCTION_OR  => "OR";
+
+
+# variables
+my $my_name = basename($0);
+my @mesg    = ();
+my %options;
+
+
+##--------------------------------------------------------------------------
+
+# Function: printUsage()
+# Purpose: Prints usage to stderr 
+
+sub printUsage {              
+ 
+    my @usage;
+    @usage = ("Usage: $my_name [ -f filename | -l fileList ] [ -c criteriaName |\n", 
+              "       -q queryList ] [ -o | -a ] [ -s ] [ -h ] [ feiCommandWithArgs ]\n",
+              "       \n",
+              "    -f filename      - Name of file to test\n",
+              "    -c criteriaName  - Name of criterion script to invoke\n", 
+              "    -l fileList      - File containing list of files to test\n",
+              "    -q queryList     - File containing list of criteria to use\n",
+              "    -a               - And flag. File is successful if it passed \n",
+              "                       all criteria. (default)\n",
+              "    -o               - Or flag. File is successful if it passed\n", 
+              "                       at least one criterion. \n",
+              "    -s               - Prints status of each file and criteria\n", 
+              "    -h               - Prints this message and exits\n",
+              "    feiCommand...    - Any FEI command that accepts filenames\n",
+              "                       as last arguments.  This will only\n",
+              "                       be invoked if files pass criteria.\n",
+              "        \n",
+              "    Option constaints:\n",
+              "    Either one or more -f options XOR one -l option.\n",
+              "    Either one of more -c options XOR one -q option.\n",
+              "    \n",
+              "    Returns: If no feiCommand is supplied, then return value of\n", 
+              "    script is 0 is all files passed all criteria, 1 otherwise. If\n",
+              "    feiCommand is supplied and all files passed, exit value of fei\n",
+              "    command; 1 otherwise.\n",
+              "    \n");
+    &writeMsg(@usage); 
+    return 0;
+}
+
+##--------------------------------------------------------------------------
+
+## Function void writeMsg(args);
+## Subprocedure that prints arguments to standard error.
+
+sub writeMsg {    
+    for (my $i = 0; $i <= $#_; $i++) {
+        print STDERR "$_[$i]";
+    }
+}
+
+##--------------------------------------------------------------------------
+
+# Function: printPurpose()
+# Purpose: Prints purpose to stderr.
+
+sub printPurpose {
+    my @purpose;
+    @purpose = ("Purpose: Invokes criteria tests on files to determine if FEI\n",
+                "         operation should be invoked.  Return status 0 if all\n",
+                "         files satisfy all criteria; >0 for errors.\n");
+    &writeMsg(@purpose); 
+    return 0;
+}
+
+
+##--------------------------------------------------------------------------
+
+# Function: cleanArray()
+# Purpose: Removes empty strings from incoming array.
+
+
+sub cleanArray {
+    my @args = ();
+    my $arg;
+    foreach $arg (@_) 
+    {
+        if ( $arg )
+        {
+            chomp($arg);
+            if ( $ arg )
+            {
+                push(@args, $arg);
+            }
+        }
+    }
+    return @args;
+}
+
+##--------------------------------------------------------------------------
+
+## Yes, there's prolly a better wa.  But Orielly and user groups dont tell me
+## Returns map from key to list
+
+sub parseArguments {
+
+    my(@args, $argLength, $curArg, $listfile);
+    my ($critfile, @errorMesg, %options, @list);
+    @args = @_;
+    $argLength = (scalar(@args));
+
+    ## Initialize options map
+    %options = ();    
+    $options{"help"}     = "0";
+    $options{"quiet"}    = "1";
+    $options{"function"} = QFUNCTION_AND;
+    $options{"filelist"} = [];
+    $options{"critlist"} = [];
+    
+    ## Parse loop
+    for ( my $i = 0; $i < $argLength; $i++)
+    {
+        $curArg = $args[$i];
+        if ( $curArg eq "-f") 
+        {            
+            ## check if list file was already specified
+            if ( $listfile )
+            {
+                @errorMesg = ("Cannot use -f and -l options together.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## get filename from next index
+            $i++;
+            my $filename = $args[$i];
+            
+            ## be sure filename is non-null
+            if ( ! $filename )
+            {
+                @errorMesg = ("Missing filename after -f option.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## get the list of files, add this one               
+            my @flist = @{ $options{"filelist"} };
+            if ( @flist ) {
+                push(@flist, $filename);
+            } else {
+                @flist = ( $filename );   
+            }
+            $options{"filelist"} = [ @flist ];
+        }       
+        elsif ( $curArg eq "-c" ) 
+        {
+            ## check if criterion list file was already specified
+            if ( $critfile )
+            {
+                @errorMesg = ("Cannot use -c and -q options together.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## get criterion name from next index
+            $i++;
+            my $criterion = $args[$i];
+            
+            ## be sure criterion file is non-null
+            if ( ! $criterion )
+            {
+                @errorMesg = ("Missing criterion after -c option.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## get the list of files, add this one            
+            my @clist = @{ $options{"critlist"} };
+            if ( @clist ) {
+                push(@clist, $criterion);
+            } else {
+                @clist = ( $criterion );   
+            }
+            $options{"critlist"} = [ @clist ];
+        }
+        elsif ( $curArg eq "-l" ) 
+        {
+            ## check if list file was already specified
+            if ( $listfile )
+            {
+                @errorMesg = ("Cannot use -l option more than once.\n");  
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## check that -l and -f havent been done together
+            if ( scalar(@{$options{"filelist"}}) > 0 )
+            {
+                @errorMesg = ("Cannot use -l and -f options together.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## get listfile name from the next index
+            $i++; 
+            $listfile = $args[$i];
+            
+            ## check that value is non-null
+            if ( ! $listfile )
+            {
+                @errorMesg = ("Missing list file after -l option.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+             
+            ## check file is readable
+            if ( ! -r $listfile ) 
+            {
+                @errorMesg = ("List file $listfile is unreadable.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                return %options;
+            }
+            
+            # open up file, create list from contents
+            open(MYINPUTFILE, "< $listfile");
+            my(@lines) = <MYINPUTFILE>;
+            close(MYINPUTFILE);
+            @lines = cleanArray(@lines);            
+            $options{"filelist"} =  [ @lines ];                
+        }
+        elsif ( $curArg eq "-q" ) 
+        {
+            ## check that -q hasnt been done more than once
+            if ( $critfile )
+            {
+                @errorMesg = ("Cannot use -c option more than once.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## check that -q and -c havent been done together              
+            if ( scalar(@{$options{"critlist"}}) > 0 )
+            {
+                @errorMesg = ("Cannot use -q and -c options together.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## get criteria listfile name from the next index
+            $i++;
+            $critfile = $args[$i];
+            
+            ## check that value is non-null
+            if ( ! $critfile )
+            {
+                @errorMesg = ("Missing criterion after -q option.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                $options{"help"}  = 1;
+                return %options;
+            }
+            
+            ## check file is readable
+            if ( ! -r $critfile ) 
+            {
+                @errorMesg = ("Criteria file $critfile is unreadable.\n");   
+                &writeMsg(@errorMesg);
+                $options{"error"} = 1;
+                return %options;
+            }            
+            open(MYINPUTFILE, "< $critfile");
+            my(@lines) = <MYINPUTFILE>;
+            close(MYINPUTFILE);
+            @lines = cleanArray(@lines);
+            $options{"critlist"} =  [ @lines ];
+        }
+        elsif ( $curArg eq "-h" )
+        {
+            ## set help flag
+            $options{"help"} = "1";
+            return %options;
+        }
+        elsif ( $curArg eq "-o" )
+        {
+            ## set function 
+            $options{"function"} = QFUNCTION_OR;
+        }
+        elsif ( $curArg eq "-s" )
+        {
+            ## set log flag
+            $options{"quiet"} = "0";
+        }
+        else {
+            ## remaining args assumed to be part of a command to be called
+            my @cmdList = splice(@args, 0, $i);
+            
+            #combine to string 
+            my $cmdAsString = join(" ", @args);
+                        
+            # split to array, sigh...
+            my @cmdAsList = split(" ", $cmdAsString);
+            
+            $options{"command"} = [ @cmdAsList ]; 
+            $i = $argLength;
+        }            
+    }
+        
+    return %options;    
+}
+    
+
+
+## =======================================================
+
+## evaluates crieria for the file
+## Arg0 = criterion script name/path
+## Arg1 = filename to test
+## Arg2 = flag indicating whether or not we log
+## Return QTRUE iff filename passes criteria 
+
+sub evalCriteria { 
+    
+    my ($crit_name, $filename, $log_flag) = @_;
+    my $result = QFALSE;
+    my $tmpResult;
+    
+    ## test arg length
+    if (scalar(@_) != 3) {
+        return QFALSE; 
+    }
+        
+    ## check that script exists
+    if (! -e $crit_name) {
+        &writeMsg("Criterion script $crit_name cannot be found.\n");
+        return QFALSE;
+    }
+    
+    ## execute criterion script
+    $tmpResult = system($crit_name, $filename);
+    
+    if ($tmpResult == 0) {
+        $result = QTRUE;   
+    }
+    
+    
+    ## check if we should print status
+    if ( $log_flag eq QTRUE )
+    {
+        if ( $result eq QTRUE )
+        {        
+            @mesg = ("Evaluating $filename for criteria $crit_name...OK\n");
+        }
+        else
+        {
+            @mesg = ("Evaluating $filename for criteria $crit_name...ERROR\n");
+        }
+        writeMsg(@mesg);           
+    }
+        
+    return $result ;
+}
+
+## =======================================================
+## =======================================================
+
+# arg0 = first operand
+# arg1 = second operand
+# arg2 = function 
+# return QTRUE or QFALSE
+
+sub evalBooleanFnc {
+    
+    my($operand1, $operand2, $function, $result, $tmpResult);
+    ($operand1, $operand2, $function) = @_;
+    $result = QFALSE;
+    
+
+    ## test arg length
+    if (scalar(@_) != 3) {
+        return QFALSE; 
+    }
+         
+    if ( $function eq QFUNCTION_OR ) {    
+        $tmpResult = ( $operand1 eq QTRUE || $operand2 eq QTRUE);
+    } else {
+        $tmpResult = ( $operand1 eq QTRUE && $operand2 eq QTRUE);
+    }
+    
+    
+    if ( $tmpResult ) {
+        $result = QTRUE;
+    } else {
+        $result = QFALSE;   
+    }
+   
+    return $result;        
+}
+
+## =======================================================
+## =======================================================
+
+## Arg count check
+## Arg count check
+if (scalar(@ARGV) < 1) 
+{
+    @mesg = ("$my_name: Incorrect number of arguments.\n");
+    &writeMsg(@mesg);
+    &printUsage;
+    exit(1);
+}
+
+## =======================================================
+## =======================================================
+
+
+## Parse command line options
+%options = &parseArguments(@ARGV);
+
+# check for help fla
+if ( $options{"help"} && ! $options{"error"} )
+{
+    printPurpose();
+    printUsage();
+    exit 0;
+} 
+
+# then try to check for error flag
+elsif ( $options{"error"} )
+{    
+    if ( $options{"help"} ) 
+    {
+        @mesg = ("Unable to parse arguments.\n\n");
+        &writeMsg(@mesg);
+        printUsage();
+    }
+    exit 1;
+}
+
+
+# collect useful state
+my ($LOG_FLAG, $LOGIC_FUNC, @FILE_LIST, @CRIT_LIST, @CMD_LIST);
+$LOG_FLAG   = $options{"quiet"} == 0 ? QTRUE : QFALSE;
+$LOGIC_FUNC = $options{"function"};
+if ( $options{"filelist"} ) {
+   @FILE_LIST  = @{$options{"filelist"}};
+} else {
+   @mesg = ("No files specified.");
+   &writeMsg(@mesg);
+   exit 1;
+}
+
+if ( $options{"critlist"} ) {
+    @CRIT_LIST  = @{$options{"critlist"}};
+} else {
+   @mesg = ("No criteria specified.");
+   &writeMsg(@mesg);
+   exit 1;   
+}
+if ( $options{"command"} ) {
+    @CMD_LIST = @{$options{"command"}};
+} else {
+    @CMD_LIST = ();
+}
+
+#print "File list: @FILE_LIST \n";
+#print "Crit list: @CRIT_LIST \n";
+#print "Cmd  list: @CMD_LIST \n";
+#print "Logic function = $LOGIC_FUNC \n";
+
+## =======================================================
+## =======================================================
+
+## Perform criteria check for each file and for each criterion
+
+my $ALL_FILES_OK = QTRUE;
+my $FILE_PASSED_CRIT = QTRUE;
+my $FILE_OK = QTRUE;
+my ($FILENAME, $CRITERION, $FILE_PASSED);
+
+## Initial OK - identify value based on function - AND: true, OR: false
+my $INITIAL_OK = QTRUE;
+if ( ${LOGIC_FUNC} eq QFUNCTION_OR )
+{
+    $INITIAL_OK = QFALSE;
+}
+
+
+LBLS_R_EVIL : foreach $FILENAME ( @FILE_LIST ) 
+{    
+    
+    if ( $ALL_FILES_OK eq QFALSE) { last LBLS_R_EVIL; }
+    
+    ## init file ok to false
+    $FILE_OK=$INITIAL_OK;
+    
+NEST_LBLS_R_EVIL : foreach $CRITERION ( @CRIT_LIST )
+    {     
+        if ( $FILE_OK eq QFALSE && $LOGIC_FUNC eq "and" ) {
+            last NEST_LBLS_R_EVIL; 
+        }
+        
+        ## evaulate the criteria for current filename
+        $FILE_PASSED = evalCriteria( $CRITERION, $FILENAME, $LOG_FLAG );
+        
+        ## is file still ok?  ask function
+        $FILE_OK = evalBooleanFnc( $FILE_OK, $FILE_PASSED, $LOGIC_FUNC);                
+    }
+ 
+    ## check if we should print status
+    if ( $LOG_FLAG eq QTRUE )
+    {
+        if ( $FILE_OK eq QTRUE )
+        {
+            @mesg = ("File ${FILENAME}: PASSED\n");
+        }
+        else
+        {
+            @mesg = ("File ${FILENAME}: FAILED\n");
+        }        
+        writeMsg(@mesg);
+    }
+    
+    
+    ## are all files so far ok?  Update flag 
+    $ALL_FILES_OK = evalBooleanFnc( $ALL_FILES_OK, $FILE_OK, QFUNCTION_AND );        
+}
+
+## check if we should print status
+if ( $LOG_FLAG eq QTRUE )
+{
+    if ( $ALL_FILES_OK eq QTRUE )
+    {
+        @mesg = ("All files: PASSED\n");
+    }
+    else
+    {
+        @mesg = ("Some file(s): FAILED\n");
+    }
+    writeMsg(@mesg);
+}
+
+
+## =======================================================
+## =======================================================
+
+## If no args, then return success, 0, or failure, >0.
+## If args and success so far, attempt to invoke FEI command
+## passing it the files associated with FILE_LIST.
+
+if ( @CMD_LIST && $ALL_FILES_OK eq QTRUE  )
+{
+    ## create the command list by appending file list
+    push(@CMD_LIST, @FILE_LIST);
+       
+    if ( $LOG_FLAG eq QTRUE )
+    {
+        my $cmdString = "";
+        my $cmdEntry;
+        foreach $cmdEntry ( @CMD_LIST ) {
+            $cmdString = "$cmdString $cmdEntry";   
+        }
+        @mesg = ("Invoking:$cmdString \n");
+        writeMsg(@mesg);        
+    }
+      
+    ## run the command
+    my $cmdStatus = system @CMD_LIST;
+    
+    ## exit with the exit status number
+    my $cmdExitStatus = $cmdStatus / 256;    
+    exit $cmdExitStatus;        
+}
+else
+{    
+    exit $ALL_FILES_OK ;   
+}
+    
+
+## =======================================================
+## =======================================================
+
+# exit
+

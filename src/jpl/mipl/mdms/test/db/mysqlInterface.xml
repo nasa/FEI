@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!-- CVS: $Id: mysqlInterface.xml,v 1.1.1.1 2003/01/25 02:18:52 txh Exp $ -->
+
+<!-- MDMS XML interface to relational database back-end. -->
+
+<!-- Copyright 2001, California Institute of Technology. -->
+<!-- ALL RIGHTS RESERVED.                                -->
+<!-- U.S. Government Sponsorship acknowledge. 6/29/2000. -->
+<!-- MIPL Data Management System (MDMS).                 -->
+
+<database xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
+    xmlns="http://sorrento.jpl.nasa.gov"
+    xsi:schemaLocation="http://sorrento.jpl.nasa.gov/schema/dbInterface.xsd"
+>
+    <connection title="MySQL JNDI and JDBC Connection">
+        <jdbc>
+            <driver>
+                org.gjt.mm.mysql.Driver
+            </driver>
+            <url>
+                jdbc:mysql://@host:@port/
+            </url>
+        </jdbc>
+        <jndi>
+            <host>
+                phoenix.jpl.nasa.gov
+            </host>
+            <port>
+                389
+            </port>
+            <searchBase>
+                dc=mdms,dc=jpl,dc=nasa,dc=gov
+            </searchBase>
+        </jndi>
+    </connection>
+
+    <setup>
+        <defineTables>
+            <prep>
+            </prep>
+            <statement>
+                create table if not exists simpleTable (roleIdx int auto_increment primary key not null, name varchar(30) not null, getFlag bit not null, addFlag bit not null, deleteFlag bit not null, replaceFlag bit not null, proprietaryGet bit not null, description varchar(120) null)
+            </statement>
+        </defineTables>
+        <defineProcedures>
+            <prep>
+            </prep>
+            <statement>
+            </statement>
+        </defineProcedures>
+    </setup>
+
+    <showRecords>
+        <statement>
+            select @list from @table
+        </statement>
+    </showRecords>
+
+    <deleteRecord>
+        <statement>
+            delete from @table where @list
+        </statement>
+    </deleteRecord>
+
+    <simpleProc>
+        <procedure>
+            insert into simpleTable (name, getFlag, addFlag, deleteFlag, replaceFlag, proprietaryGet, description) values ('@name', @getFlag, @addFlag, @delFlag, @rplFlag, @proprietaryGet, '@description')
+        </procedure>
+    </simpleProc>
+
+    <cleanup>
+        <dropTables>
+            <statement>
+                drop table if exists simpleTable
+            </statement>
+        </dropTables>
+        <dropProcedures>
+            <statement>
+            </statement>
+        </dropProcedures>
+    </cleanup>
+</database>

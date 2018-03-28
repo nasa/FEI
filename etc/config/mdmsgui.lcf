@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<!--
+   Logging configuration file used by the Mission Data Management Service (MDMS)
+   logging framework for GUI applications. Handles configuration logging levels 
+   and output targets.
+
+   Copyright (c) 2006 by the California Institute of Technology.      
+   ALL RIGHTS RESERVED.  United States Government Sponsorship         
+   acknowledged. Any commercial use must be negotiated with the       
+   Office of Technology at the California Institute of Technology.    
+                                                                      
+   The technical data in this document (or file) is controlled for    
+   export under the Export Administration Regulations (EAR), 15 CFR,  
+   Parts 730-774. Violations of these laws are subject to fines and   
+   penalties under the Export Administration Act.     
+   
+   @author N. Toole {Nicholas.Toolg@jpl.nasa.gov}
+   @version $Id: mdmsgui.lcf,v 1.4 2006/10/03 02:18:19 ntt Exp $
+-->
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+    <!-- appender name="TRACER" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%-5p [%t] (%F:%L) - %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ALL"/>
+            <param name="LevelMax" value="DEBUG"/>
+        </filter>
+    </appender -->
+    <!--                          -->
+    <!-- Declare the SMTPAppender -->
+    <!--                          -->
+    <appender name="EMAIL" class="org.apache.log4j.net.SMTPAppender">
+        <param name="BufferSize" value="512"/>
+        <param name="SMTPHost" value="mipl.jpl.nasa.gov"/>
+        <param name="From" value="Thomas.Huang@jpl.nasa.gov"/>
+        <param name="To" value="txh@mipl.jpl.nasa.gov"/>
+        <param name="Subject" value="[SMTPAppender] Application message"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{ISO8601}]%n%n%-5p%n%n%c%n%n%m%n%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ERROR"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+    <!--                          -->
+    <!-- Declare GUI Appender     -->
+    <!--                          -->
+    <appender name="GUI" class="jpl.mipl.mdms.FileService.komodo.ui.savannah.logging.GuiLogAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{ISO8601}]%n%n%-5p%n%n%c%n%n%m%n%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ALL"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+    <!--                           -->
+    <!-- setup log4j's root logger -->
+    <!--                           -->
+    <root>
+        <level value="INFO" class="jpl.mipl.mdms.utils.logging.L4JCustomLevel"/>
+        <appender-ref ref="GUI"/>
+        <!-- appender-ref ref="TRACER"/ -->
+    </root>
+</log4j:configuration>

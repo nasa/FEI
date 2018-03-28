@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+
+<!--=========================================================================-->
+<!-- Mission Data Management Service (MDMS) CruiseControl Config Script      -->
+<!--                                                                         -->
+<!-- Description: CruiseControl (http://cruisecontrol.sf.net) framework      -->
+<!-- enables continuous build, integration and reporting.                    -->
+<!-- Prerequisites: CruiseControl version >= v2.1                            -->
+<!--                                                                         -->
+<!-- Author: Rich Pavlovsky {rich.pavlovsky@jpl.nasa.gov}                    -->
+<!-- Version: $Id: config.xml,v 1.62 2004/10/25 17:45:22 rap Exp $           -->
+<!--=========================================================================-->
+
+<cruisecontrol>
+    <project name='java' buildafterfailed='true'>
+
+        <!--=======================================================================-->
+        <!-- Bootstrappers are run everytime the build runs, *before* the          -->
+        <!-- modification checks.                                                  -->
+        <!--=======================================================================-->
+
+        <bootstrappers>
+            <currentbuildstatusbootstrapper file='logs/buildstatus.txt'/>
+        </bootstrappers>
+
+        <!--=======================================================================-->
+        <!-- Defines where CruiseControl looks for changes to decide whether to    -->
+        <!-- to run the build.                                                     -->
+        <!--=======================================================================-->
+
+        <modificationset quietperiod='10'>
+            <cvs localworkingcopy='.'
+                 cvsroot='/project/mdms/CVS'/>
+        </modificationset>
+
+        <!--=======================================================================-->
+        <!-- Configures the actual build loop and how often it will run.  This     -->
+        <!-- block also defines which build file and target to use .               -->
+        <!--=======================================================================-->
+
+        <schedule interval='300'>
+            <ant antscript="/pkg/ant/1.5.3/bin/ant" buildfile='build.xml'
+                 target='cruise-clean-master' multiple='1' uselogger='true'
+                 usedebug='false'/>
+        </schedule>
+
+        <!--=======================================================================-->
+        <!-- Defines the log directory and which secondary log files will be       -->
+        <!-- merged into the main log file.                                        -->
+        <!--=======================================================================-->
+
+        <log dir='logs'>
+            <merge file='build/test/data/TESTS-TestSuites.xml'/>
+            <merge file='build/checkstyle/data/checkstyle.xml'/>
+            <merge file='build/javancss/javancss_metrics.xml'/>
+        </log>
+
+        <!--=======================================================================-->
+        <!-- Publishers are run everytime the build runs, *after* the build        -->
+        <!-- completes (successfull or not).                                       -->
+        <!--=======================================================================-->
+
+        <publishers>
+            <xsltlogpublisher directory='logs' xsltfile='etc/stylesheets/full.xsl'/>
+
+            <currentbuildstatuspublisher file='logs/buildstatus.txt'/>
+            <!-- deploy the build log file to FEI -->
+            <execute command='/pkg/ant/1.5.3/bin/ant cruise-deploy-log-only'/>
+
+            <htmlemail mailhost='smtp.jpl.nasa.gov'
+                       returnaddress='rap@mipl.jpl.nasa.gov'
+                       buildresultsurl='http://mdms.jpl.nasa.gov/build/get'
+                       skipusers='true' spamwhilebroken='false'
+                       css='etc/stylesheets/cruisecontrol.css' logdir='logs'
+                       xsldir='etc/stylesheets' subjectprefix='[CruiseControl] '>
+                <map alias="developers" address="rap@mipl, txh@mipl, ntt@mipl, cxr@mipl,
+          awt@mipl"/>
+                <!-- always send success build mails to the following -->
+                <always address="developers"/>
+            </htmlemail>
+        </publishers>
+
+        <!--=======================================================================-->
+        <!-- Plugins add additional functionality to the build process (like HTML  -->
+        <!-- email support and CVS integration).                                   -->
+        <!--=======================================================================-->
+
+        <plugin name='cvs'
+                classname='net.sourceforge.cruisecontrol.sourcecontrols.CVS'/>
+        <plugin name='email'
+                classname='net.sourceforge.cruisecontrol.publishers.HTMLEmailPublisher'/>
+        <plugin name='execute'
+                classname='net.sourceforge.cruisecontrol.publishers.ExecutePublisher'/>
+    </project>
+</cruisecontrol>

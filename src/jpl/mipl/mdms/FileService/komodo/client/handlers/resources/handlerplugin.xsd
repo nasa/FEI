@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright (c) 2008 Jet Propulsion Laboratory, California Institute of Technology
+   All rights reserved
+   US Government Sponsorship acknowledged. 08-08-2008.
+
+   This schema defines FEI file event handler plugin descriptor format
+     
+   @author N. Toole {Nicholas.Toole@jpl.nasa.gov}, 
+   @version $Id: handlerplugin.xsd,v 1.2 2010/02/02 22:43:22 ntt Exp $
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fei="http://mdms.jpl.nasa.gov/schema/pluginhandler" targetNamespace="http://mdms.jpl.nasa.gov/schema/pluginhandler" elementFormDefault="qualified">
+    
+    <xs:complexType name="propertyType">
+        <!-- Definition of an property with name and value -->
+        <xs:attribute name="name"    type="xs:string"/>
+        <xs:attribute name="value"   type="xs:string"/>
+        <xs:attribute name="comment" type="xs:string"/>                
+    </xs:complexType>
+    
+    <xs:complexType name="propertiesType">
+        <!-- Definition of properties list -->
+        <xs:sequence>
+            <xs:element name="property" type="fei:propertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="handlerType">
+        <!-- Definition of a handler type -->
+        <xs:sequence>        
+            <xs:element name="implementation" type="xs:string" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="properties" type="fei:propertiesType" minOccurs="0" maxOccurs="1"/>            
+        </xs:sequence>        
+    </xs:complexType>
+    
+    <xs:complexType name="handlerPluginType">
+        <!-- Definition of a handler plugin element -->
+        <xs:sequence> 
+            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="id" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="version" type="xs:string" minOccurs="1" maxOccurs="1" />
+            <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1" />
+            <xs:element name="org" type="xs:string" minOccurs="1" maxOccurs="1" />  
+            <xs:element name="handler" type="fei:handlerType" minOccurs="1" maxOccurs="1" />            
+        </xs:sequence>            
+    </xs:complexType>
+    
+    <xs:element name="handlerplugin" type="fei:handlerPluginType"/>
+</xs:schema>

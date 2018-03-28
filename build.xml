@@ -1,0 +1,672 @@
+<?xml version="1.0"?>
+
+<!--=========================================================================-->
+<!-- Mission Data Management Service (MDMS) Build Script                     -->
+<!--                                                                         -->
+<!-- Description: Apache Ant (http://ant.apache.org) build script to compile -->
+<!-- package, test, deploy and generate reports on MDMS java code.           -->
+<!-- Prerequisites: Apache Ant version >= v1.5 + several jar files in Ant's  -->
+<!-- lib directory, including: junit.jar, log4j.jar and xalan.jar            -->
+<!--                                                                         -->
+<!-- Author: Rich Pavlovsky {rich.pavlovsky@jpl.nasa.gov}                    -->
+<!-- Version: $Id: build.xml,v 1.268 2017/12/22 02:35:55 wphyo Exp $            -->
+<!--=========================================================================-->
+
+<!--=======================================================================-->
+<!-- Defines XML fragment files which enable a central, inheritable        -->
+<!-- location for global definitions and properties .                      -->
+<!--=======================================================================-->
+
+<!DOCTYPE project [
+        <!ENTITY properties SYSTEM "properties.xml">
+        <!ENTITY taskdef SYSTEM "taskdef.xml">
+        <!ENTITY targets SYSTEM "targets.xml">
+        ]>
+<project name="Mission Data Management Service (MDMS)" default="default"
+         basedir=".">
+    <description>Mission Data Management Service (MDMS) build script. This
+        script compiles, packages, tests and deploys MDMS software.
+    </description>
+    <!--=======================================================================-->
+    <!-- Import the XML fragments defined above.                               -->
+    <!--=======================================================================-->
+    &properties; &taskdef; &targets;
+    <!--=======================================================================-->
+    <!-- MDMS specific build properties used in packaging and deployment       -->
+    <!--=======================================================================-->
+    <property name="mdms.jar.filename" value="mdms.jar"/>
+    <property name="mdms-komodo-lib.jar.filename" value="mdms-komodo-lib.jar"/>
+    <property name="mdms-komodo-client.jar.filename"
+              value="mdms-komodo-client.jar"/>
+    <property name="mdms-komodo-client.tar.filename" value="mdms-fei5.tar"/>
+    <property name="mdms-komodo-client.zip.filename" value="mdms-fei5.zip"/>
+    <property name="fei.domain.file" value="${etc.dir}/config/domain.fei"/>
+    <property name="fei.trust.store" value="${etc.dir}/ssl/mdms-fei.keystore"/>
+    <property name="komodo.public.key" value="${etc.dir}/ssl/public.der"/>
+
+    <!--=======================================================================-->
+    <!-- EMMA Code Coverage Tool                                               -->
+    <!--=======================================================================-->
+    <property name="coverage.dir"
+              value="${basedir}/reports/emma"/>     <!-- directory which emma coverage reports will be written to -->
+    <property name="instr.dir"
+              value="${build.dir}/emmainstr"/>         <!-- directory which emma instrumentation classes will be written to -->
+    <property name="emma.dir"
+              value="${basedir}/lib/emma"/>             <!-- directory that contains emma.jar and emma_ant.jar -->
+    <path id="emma.lib">
+        <pathelement location="${emma.jar}"/>
+        <pathelement location="${emma_ant.jar}"/>
+    </path>
+    <path id="emma.coverage.classes">
+        <pathelement location="${build.dir}/classes"/>
+    </path>
+
+    <!-- Load <emma> and <emmajava> custom tasks so that they can be used in ANT -->
+    <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+
+    <!-- Enable Emma -->
+    <target name="emma" description="turns on EMMA's instrumentation/reporting">
+        <property name="emma.enabled" value="true"/>
+        <!-- EMMA instr class output directory (it is important to create this property only when EMMA is enabled) -->
+        <mkdir dir="${instr.dir}"/>
+
+        <!-- this property, if overriden via -Demma.filter=<list of filter specs>
+             on ANT's command line, will set the coverage filter; by default,
+             all classes found in 'emma.coverage.classes' pathref will be instrumented:
+         -->
+        <property name="emma.filter"
+                  value="+jpl.mipl.mdms.FileService.*,-jpl.mipl.mdms.FileService.spider.*,-jpl.mipl.mdms.test.*"/>
+    </target>
+
+
+    <!--=======================================================================-->
+    <!-- Java Classpath definition for use in compile and execution tasks      -->
+    <!--=======================================================================-->
+    <path id="compile.classpath">
+        <pathelement location="${log4j.jar}"/>
+        <pathelement location="${xercesImpl.jar}"/>
+        <pathelement location="${xmlParser.jar}"/>
+        <pathelement location="${ant.jar}"/>
+        <pathelement location="${junit.jar}"/>
+        <pathelement location="${dom4j.jar}"/>
+        <pathelement location="${jaxen.jar}"/>
+        <pathelement location="${javamail.jar}"/>
+        <pathelement location="${jaf.jar}"/>
+        <pathelement location="${emma.jar}"/>
+    </path>
+    <!--=======================================================================-->
+    <!-- Java Classpath definition for use in eXtreme Programming (XP) unit    -->
+    <!-- testing tasks.                                                        -->
+    <!--=======================================================================-->
+    <path id="test.classpath">
+        <pathelement location="${junit.jar}"/>
+        <pathelement location="${xercesImpl.jar}"/>
+        <pathelement location="${xmlParser.jar}"/>
+        <pathelement location="${emma.jar}"/>
+        <pathelement location="${test.classes.dir}"/>
+        <pathelement location="${build.classes.dir}"/>
+    </path>
+    <!--=======================================================================-->
+    <!-- Java Classpath definition for use in runtime application testing      -->
+    <!--=======================================================================-->
+    <path id="runtime.classpath">
+        <pathelement location="${log4j.jar}"/>
+        <pathelement location="${javamail.jar}"/>
+        <pathelement location="${jaf.jar}"/>
+        <pathelement location="${build.classes.dir}"/>
+        <pathelement location="${resources.dir}"/>
+    </path>
+    <!--=======================================================================-->
+    <!-- Public Targets - Type 'ant -projecthelp' to view task descriptions.   -->
+    <!-- Theses targets MUST have a description and the target name should be  -->
+    <!-- very short and easy to remember.  Public target definitions are kept  -->
+    <!-- clean by calling internal targets that do the work.                   -->
+    <!--=======================================================================-->
+    <target name="default" depends="emma, compile, package" description="Default build
+      target, compiles and packages code only."/>
+    <target name="all" depends="emma, compile, document, package"
+            description="Compiles, packages, tests and documents code."/>
+    <target name="compile" depends="init, compile-mdms"
+            description="Compiles MDMS source code (NOTE: Java source code only)."/>
+
+    <target name="package" depends="signlibs, compile, package-mdms-jar,
+      package-mdms-komodo-lib-jar,      package-mdms-komodo-client-jar,
+      package-mdms-komodo-client-tar,
+      package-mdms-komodo-client-zip" description="Packages
+      compiled code into JAR, TAR, WAR and EAR distributables."/>
+    <target name="signlibs" description="Lazily sign third party libraries/jars">
+        <signjar alias="mdms" keystore="${etc.dir}/ssl/mdms-code-signing.keystore"
+                 storepass="mdms-dev" lazy="true">
+            <path>
+                <fileset dir="${lib.dir}" includes="**/*.jar"/>
+            </path>
+        </signjar>
+    </target>
+    <target name="document" depends="javadoc, checkstyle, javancss"
+            description="Documents source code (NOTE: This may be time consuming)."/>
+    <target name="test" depends="compile, test-init, test-compile, test-run"
+            description="Executes unit test cases on code and documents results."/>
+    <target name="deploy" depends="read-props, fei-taskdef"
+            description="Deploys web applications to app server (if $FEI5 is
+      defined)." if="fei-defined"/>
+    <target name="clean" description="Deletes all files that are generated by the
+      build.">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+        <delete dir="${doc.dir}"/>
+        <delete dir="${test.src.dir}"/>
+        <delete dir="${generated.dir}"/>
+    </target>
+    <!--=======================================================================-->
+    <!-- Internal Targets - These targets should NOT have descriptions because -->
+    <!-- we don't want them to show up when a client types the -projecthelp    -->
+    <!-- argument to Ant.  The target names can be long and are usually        -->
+    <!-- prepended by the public target that called them.                      -->
+    <!--=======================================================================-->
+    <!-- The echo target is useful to find jar libraries the build is using    -->
+    <target name="echo">
+        <echo message="Ant Version = ${ant.version}"/>
+        <echo message=""/>
+        <echo message="PATH PROPERTIES:"/>
+        <echo message="masterbuild.dir = ${masterbuild.dir}"/>
+        <echo message="src.dir = ${src.dir}"/>
+        <echo message="build.dir = ${build.dir}"/>
+        <echo message="dist.dir = ${dist.dir}"/>
+        <echo message="doc.dir = ${doc.dir}"/>
+        <echo message="lib.dir = ${lib.dir}"/>
+        <echo message="etc.dir = ${etc.dir}"/>
+        <echo message="logs.dir = ${logs.dir}"/>
+        <echo message=""/>
+        <echo message="COMPILE PROPERTIES:"/>
+        <echo message="build.debug = ${build.debug}"/>
+        <echo message="build.optimize = ${build.optimize}"/>
+        <echo message="build.deprecation = ${build.deprecation}"/>
+        <echo message=""/>
+        <echo message="TEST PROPERTIES:"/>
+        <echo message="test.dir = ${test.dir}"/>
+        <echo message="test.classes.dir = ${test.classes.dir}"/>
+        <echo message="test.data.dir = ${test.data.dir}"/>
+        <echo message="test.reports.dir = ${test.reports.dir}"/>
+        <echo message="test.src.dir = ${test.src.dir}"/>
+        <echo message=""/>
+        <echo message="LIBRARY PROPERTIES:"/>
+        <echo message="lib.properties.file = ${lib.properties.file}"/>
+        <echo message="checkstyle.jar = ${checkstyle.jar}"/>
+        <echo message="junit.jar = ${junit.jar}"/>
+        <echo message="log4j.jar = ${log4j.jar}"/>
+        <echo message="xdoclet.jar = ${xdoclet.jar}"/>
+        <echo message="xdoclet-ejb.jar = ${xdoclet-ejb.jar}"/>
+        <echo message="xdoclet-java.jar = ${xdoclet-java.jar}"/>
+        <echo message="xdoclet-web.jar = ${xdoclet-web.jar}"/>
+        <echo message="xercesImpl.jar = ${xercesImpl.jar}"/>
+        <echo message="xmlParser.jar = ${xmlParser.jar}"/>
+        <echo message="ant.jar = ${ant.jar}"/>
+        <echo message="javamail.jar = ${javamail.jar}"/>
+        <echo message="jaf.jar = ${jaf.jar}"/>
+    </target>
+    <target name="init" depends="build-props">
+        <echo message="Building ${ant.project.name}"/>
+        <echo message="buildtime = ${buildtime}"/>
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${test.dir}"/>
+        <mkdir dir="${generated.dir}"/>
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${test.data.dir}"/>
+        <mkdir dir="${test.reports.dir}"/>
+        <mkdir dir="${test.src.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${doc.dir}"/>
+        <mkdir dir="${javadoc.dir}"/>
+        <mkdir dir="${logs.dir}"/>
+    </target>
+    <target name="build-props">
+        <tstamp>
+            <format property="buildtime" pattern="yyyy-MM-dd'T'HH-mm-ss"/>
+        </tstamp>
+        <tstamp>
+            <format property="lastbuild" pattern="MM'/'dd'/'yyyy hh:mm a"/>
+        </tstamp>
+        <mkdir dir="${build.dir}"/>
+        <propertyfile comment="MDMS Build Information"
+                      file="${build.dir}/build.properties">
+            <entry key="mdms.build.date" type="date" pattern="EEEE MMM dd, yyyy"
+                   value="now"/>
+            <entry key="mdms.build.time" type="date" pattern="kk:mm:ss" value="now"/>
+            <entry key="mdms.buildtime" value="${buildtime}"/>
+            <entry key="mdms.lastbuild" value="${lastbuild}"/>
+            <entry key="mdms.build.host" value="${env.COMPUTERNAME}"/>
+            <entry key="mdms.build.user.name" value="${user.name}"/>
+            <entry key="mdms.build.os.name" value="${os.name}"/>
+            <entry key="mdms.build.ant.version" value="${ant.version}"/>
+        </propertyfile>
+    </target>
+    <target name="read-props">
+        <property file="${build.dir}/build.properties"/>
+    </target>
+    <target name="fei-taskdef">
+        <taskdef name="fei" classname="jpl.mipl.mdms.FileService.util.AntTask"
+                 classpath="${build.classes.dir}"/>
+    </target>
+    <target name="fei-user-info">
+        <condition property="fei-user-defined" value="true">
+            <and>
+                <isset property="fei.userid"/>
+                <isset property="fei.password"/>
+            </and>
+        </condition>
+    </target>
+    <target name="deploy-mdms-build-log" depends="fei-taskdef, fei-user-info">
+        <!-- Get the properties from previous build attempt -->
+        <property file="${build.dir}/build.properties"/>
+        <echo message="mdms.lastbuild: ${mdms.lastbuild}"/>
+        <property name="logfile-name" value="build-${mdms.buildtime}.log"/>
+        <!-- Copy the latest cruise control log file only -->
+        <copy todir="${build.dir}">
+            <fileset dir="${root.dir}/logs" casesensitive="yes">
+                <include name="log*xml"/>
+                <date datetime="${mdms.lastbuild}" when="after"/>
+            </fileset>
+        </copy>
+        <!-- FEI the file -->
+        <fei userid="${fei.userid}" password="${fei.password}" serverGroup="build"
+             filetype="build_logs" comment="MDMS build log ${buildtime}"
+             domainfile="${fei.domain.file}" truststore="${fei.trust.store}">
+            <fileset dir="${build.dir}">
+                <include name="log*xml"/>
+            </fileset>
+        </fei>
+    </target>
+    <target name="test-init" depends="init">
+        <mkdir dir="${test.dir}/output"/>
+        <copy todir="${test.src.dir}">
+            <fileset dir="${src.dir}" includes="**/test/**"/>
+        </copy>
+        <copy todir="${test.classes.dir}">
+            <fileset dir="${src.dir}"
+                     includes="jpl/mipl/mdms/test/FileService/komodo/client/resources/**"
+            />
+        </copy>
+    </target>
+    <target name="test-compile" depends="test-init">
+        <javac destdir="${test.classes.dir}" debug="${build.debug}"
+               includeAntRuntime="no" srcdir="${test.src.dir}" target="1.7">
+            <classpath refid="test.classpath"/>
+        </javac>
+    </target>
+    <target name="test-run" depends="compile, test-compile">
+        <emma enabled="${emma.enabled}">
+            <instr instrpathref="emma.coverage.classes"
+                   destdir="${instr.dir}"
+                   metadatafile="${coverage.dir}/metadata.emma"
+                   merge="true">
+                <filter value="${emma.filter}"/>
+            </instr>
+        </emma>
+        <junit printsummary="false" errorProperty="test.failed"
+               failureProperty="test.failed" fork="true" forkmode="once">
+            <classpath>
+                <pathelement location="${instr.dir}"/>
+                <path refid="emma.lib"/>
+            </classpath>
+            <classpath refid="test.classpath"/>
+            <!-- Setting system properties for use by JUnit test cases -->
+            <sysproperty key="fei.username" value="test"/>
+            <sysproperty key="fei.password" value="6fb0f38d8afccfa7d9a9e8141606a84cbe6d57a6"/>
+            <sysproperty key="fei.file.type" value="testFileType"/>
+            <sysproperty key="fei.file.type2" value="testFileType2"/>
+            <sysproperty key="fei.group.name" value="build"/>
+            <sysproperty key="fei.domain.file" value="${etc.dir}/config/domain.fei"/>
+            <sysproperty key="fei.schema.file"
+                         value="${src.dir}/jpl/mipl/mdms/FileServer/komodo/api/resources/domain.xsd"/>
+            <sysproperty key="fei.domain.url"
+                         value="file://${fei.domain.file}"/>
+            <sysproperty key="fei.trust.store"
+                         value="${etc.dir}/ssl/mdms-fei.keystore"/>
+            <sysproperty key="komodo.public.key"
+                         value="${etc.dir}/ssl/public.der"/>
+            <sysproperty key="fei.test.file.1"
+                         value="${etc.dir}/testdata/komodo/test.file.1"/>
+            <sysproperty key="fei.test.file.2"
+                         value="${etc.dir}/testdata/komodo/test.file.2"/>
+            <sysproperty key="fei.test.file.3"
+                         value="${etc.dir}/testdata/komodo/test.file.3"/>
+            <sysproperty key="fei.test.file.4"
+                         value="${etc.dir}/testdata/komodo/test.file.4"/>
+            <sysproperty key="fei.vft.link.prefix" value="/export/dev/local/fei"/>
+            <sysproperty key="fei.webapp.url"
+                         value="http://mdms.jpl.nasa.gov:8080/fei/"/>
+            <sysproperty key="output.dir" value="${test.dir}/output"/>
+            <sysproperty key="stmts.xml.file"
+                         value="${src.dir}/jpl/mipl/mdms/FileService/komodo/server/resources/KomodoSybStmts.xml"/>
+            <sysproperty key="stmts.xsd.file"
+                         value="${src.dir}/jpl/mipl/mdms/FileService/komodo/server/resources/KomodoDbStmts.xsd"/>
+            <sysproperty key="help.xml.file"
+                         value="${src.dir}/jpl/mipl/mdms/FileService/komodo/client/resources/clienthelp.xml"/>
+            <sysproperty key="help.xsd.file"
+                         value="${src.dir}/jpl/mipl/mdms/FileService/komodo/client/resources/clienthelp.xsd"/>
+            <sysproperty key="pwd.dbusrname" value="mdmstest"/>
+            <sysproperty key="pwd.dbsrvname" value="miplDev"/>
+            <sysproperty key="pwd.dbpwd" value="mdmsPas$word"/>
+            <sysproperty key="pwd.pwdsrvname" value="DEVPwdSrv"/>
+            <sysproperty key="pwd.pwdsrvhost" value="panther.jpl.nasa.gov"/>
+            <sysproperty key="pwd.pwdsrvport" value="43300"/>
+            <sysproperty key="pwd.krbrealm" value="MIPS-DEV.JPL.NASA.GOV"/>
+            <sysproperty key="pwd.krbkdc" value="miplauth-dev.jpl.nasa.gov"/>
+            <sysproperty key="pwd.krbpwd" value="mdms388"/>
+            <sysproperty key="pwd.conffile"
+                         value="${etc.dir}/config/pwdclientnotktcache.conf"/>
+            <sysproperty key="jdbc.url"
+                         value="jdbc:sybase:Tds:mipldb-dev.jpl.nasa.gov:1040"/>
+            <sysproperty key="conn.acceptorhost" value="localhost"/>
+            <sysproperty key="conn.acceptorport" value="51111"/>
+            <sysproperty key="conn.acceptorinput" value="${test.dir}/conn.input"/>
+            <sysproperty key="conn.acceptoroutput" value="${test.dir}/conn.output"/>
+            <sysproperty key="komodo.conffile"
+                         value="${etc.dir}/config/komodo.config"/>
+            <sysproperty key="org.xml.sax.driver"
+                         value="org.apache.xerces.parsers.SAXParser"/>
+            <sysproperty key="javax.xml.parsers.SAXParserFactory"
+                         value="org.apache.xerces.jaxp.SAXParserFactoryImpl"/>
+            <sysproperty key="javax.xml.parsers.DocumentBuilderFactory"
+                         value="org.apache.xerces.jaxp.DocumentBuilderFactoryImpl"/>
+            <formatter type="xml"/>
+            <formatter type="brief" usefile="false"/>
+            <test name="${testcase}" if="testcase"/>
+            <batchtest todir="${test.data.dir}" unless="testcase">
+                <fileset dir="${test.classes.dir}" includes="**/*Test.class">
+                    <include name="**/*Test.class"/>
+                    <exclude name="**/SimpleClientTest.class"/>
+                    <exclude name="**/RegistryTest.class"/>
+                    <exclude name="**/FileUtilTest.class"/>
+                    <exclude name="**/PWDClientTest.class"/>
+                </fileset>
+                <!--<fileset dir="${test.classes.dir}" includes="jpl/mipl/mdms/test/FileService/komodo/api/*Test.class"/>-->
+            </batchtest>
+            <jvmarg value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+            <jvmarg value="-Demma.coverage.out.merge=false"/>
+        </junit>
+        <!-- if enabled, generate coverage report(s): -->
+        <emma enabled="${emma.enabled}">
+            <report sourcepath="src"
+                    sort="+block,+name,+method,+class"
+                    metrics="method:70,block:80,line:80,class:100">
+                <!-- collect all EMMA data dumps (metadata and runtime)
+                     [this can be done via nested <fileset> fileset elements
+                     or <file> elements pointing to a single file]:
+                -->
+                <fileset dir="${coverage.dir}">
+                    <include name="*.emma"/>
+                </fileset>
+
+                <!-- for every type of report desired, configure a nested
+                    element; various report parameters
+                    can be inherited from the parent <report>
+                    and individually overridden for each report type:
+                -->
+                <txt outfile="${coverage.dir}/coverage.txt"
+                     depth="package"
+                     columns="class,method,block,line,name"/>
+                <xml outfile="${coverage.dir}/coverage.xml"
+                     depth="package"/>
+                <html outfile="${coverage.dir}/coverage.html"
+                      depth="method"
+                      columns="name,class,method,block,line"/>
+            </report>
+        </emma>
+        <copy file="${etc.dir}/stylesheets/junit-frames.xsl"
+              todir="${test.data.dir}">
+            <filterset>
+                <filter token="TIMESTAMP" value="${buildtime}"/>
+            </filterset>
+        </copy>
+        <junitreport todir="${test.data.dir}">
+            <fileset dir="${test.data.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" styledir="${test.data.dir}"
+                    todir="${test.reports.dir}"/>
+        </junitreport>
+        <!-- We currently don't fail the build if a unit test fails -->
+        <!-- <fail message="Unit tests failed.  Check log or reports for details"
+        if="test.failed"/> -->
+    </target>
+    <target name="javadoc">
+        <javadoc destdir="${javadoc.dir}" packagenames="jpl.mipl.mdms.*"
+                 excludepackagenames="jpl.mipl.mdms.test.*" defaultexcludes="yes"
+                 sourcepath="${src.dir}" use="true" version="true" author="true"
+                 windowtitle="${ant.project.name}" additionalparam="-breakiterator">
+            <classpath refid="compile.classpath"/>
+            <classpath path="${build.classes.dir}"/>
+            <tag name="TODO" scope="all" description="To do:"/>
+            <tag name="copyright" scope="overview" description="Copyright:"/>
+            <tag name="jsp.tag" scope="constructors" description="Jsp Tag:"
+                 enabled="false"/>
+            <tag name="jsp.attribute" scope="methods" description="Jsp Attribute:"
+                 enabled="false"/>
+            <tag name="web.filter-mapping" scope="constructors" description="Filter
+            Mapping:" enabled="false"/>
+            <tag name="web.filter" scope="constructors" description="Filter:"
+                 enabled="false"/>
+        </javadoc>
+    </target>
+    <target name="todo" depends="init">
+        <todo destdir="${build.dir}/todo">
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+            </fileset>
+            <info header="To-do List" tag="TODO"/>
+        </todo>
+    </target>
+    <target name="checkstyle" depends="init">
+        <property name="checkstyle.data.dir"
+                  location="${build.dir}/checkstyle/data"/>
+        <mkdir dir="${checkstyle.data.dir}"/>
+        <copy file="${etc.dir}/checkstyle/checkstyle-noframes-mdms.xsl"
+              todir="${checkstyle.data.dir}">
+            <filterset>
+                <filter token="TIMESTAMP" value="${buildtime}"/>
+            </filterset>
+        </copy>
+        <checkstyle failOnViolation="false"
+                    config="${checkstyle.config.dir}/checkstyle_checks.xml">
+            <formatter type="xml" toFile="${checkstyle.data.dir}/checkstyle.xml"/>
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+                <!-- Spider JAXB code is dynamically created, don't check style -->
+                <exclude name="**/spider/api/jaxb/**"/>
+            </fileset>
+        </checkstyle>
+        <style basedir="${checkstyle.data.dir}" destdir="${checkstyle.data.dir}"
+               includes="checkstyle.xml"
+               style="${checkstyle.data.dir}/checkstyle-noframes-mdms.xsl"/>
+    </target>
+    <target name="package-init">
+        <!-- copy non-java resources (i.e. XML files) so they can go in jarfiles -->
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${src.dir}" defaultexcludes="yes">
+                <include name="**/FileService/**"/>
+                <include name="**/*.props"/>
+                <exclude name="**/test/**"/>
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.html"/>
+                <exclude name="**/*.old"/>
+                <exclude name="**/*.jmake"/>
+                <exclude name="**/*.cert"/>
+                <exclude name="**/*.p12"/>
+                <exclude name="**/*.key"/>
+            </fileset>
+            <fileset dir="${generated.dir}" defaultexcludes="yes">
+                <include name="**/FileService/spider/api/jaxb/bgm.ser"/>
+                <include name="**/FileService/komodo/messaging/msg/jaxb/bgm.ser"/>
+                <include name="**/FileService/komodo/messaging/msg/jaxb/jaxb.properties"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="package-mdms-jar" depends="compile, package-init">
+        <jar jarfile="${dist.dir}/${mdms.jar.filename}" compress="true">
+            <fileset dir="${build.classes.dir}">
+                <exclude name="jpl/mipl/mdms/FileService/**"/>
+                <exclude name="jpl/mipl/mdms/web/fmq/**"/>
+                <exclude name="pds/**"/>
+            </fileset>
+        </jar>
+        <signjar jar="${dist.dir}/${mdms.jar.filename}"
+                 keystore="${etc.dir}/ssl/mdms-code-signing.keystore"
+                 alias="mdms" storepass="mdms-dev"/>
+    </target>
+    <target name="package-mdms-komodo-lib-jar" depends="compile, package-init">
+        <jar jarfile="${dist.dir}/${mdms-komodo-lib.jar.filename}" compress="true">
+            <fileset dir="${build.classes.dir}">
+                <include name="jpl/mipl/mdms/FileService/io/**"/>
+                <include name="jpl/mipl/mdms/FileService/net/**"/>
+                <!--<include name="jpl/mipl/mdms/FileService/sigevents/**"/>-->
+                <include name="jpl/mipl/mdms/FileService/util/**"/>
+                <include name="jpl/mipl/mdms/FileService/komodo/api/**"/>
+                <!--<include name="jpl/mipl/mdms/FileService/komodo/messaging/**"/>-->
+                <include name="jpl/mipl/mdms/FileService/komodo/util/**"/>
+                <include name="jpl/mipl/mdms/FileService/komodo/xml/**"/>
+            </fileset>
+        </jar>
+        <signjar jar="${dist.dir}/${mdms-komodo-lib.jar.filename}"
+                 keystore="${etc.dir}/ssl/mdms-code-signing.keystore"
+                 alias="mdms" storepass="mdms-dev"/>
+    </target>
+    <target name="package-mdms-komodo-client-jar" depends="compile, package-init">
+        <jar jarfile="${dist.dir}/${mdms-komodo-client.jar.filename}"
+             compress="true">
+            <fileset dir="${build.classes.dir}">
+                <include name="jpl/mipl/mdms/FileService/komodo/help/**"/>
+                <include name="jpl/mipl/mdms/FileService/komodo/client/**"/>
+                <include name="jpl/mipl/mdms/FileService/komodo/ui/savannah/**"/>
+                <exclude name="jpl/mipl/mdms/FileService/komodo/client/handlers/examples/**"/>
+            </fileset>
+        </jar>
+        <signjar jar="${dist.dir}/${mdms-komodo-client.jar.filename}"
+                 keystore="${etc.dir}/ssl/mdms-code-signing.keystore"
+                 alias="mdms" storepass="mdms-dev"/>
+    </target>
+
+    <target name="package-mdms-komodo-client-tar"
+            depends="prepare-komodo-client-docs">
+        <tar destfile="${dist.dir}/${mdms-komodo-client.tar.filename}"
+             longfile="warn">
+            <tarfileset dir="${dist.dir}" includes="${mdms.jar.filename},
+            ${mdms-komodo-lib.jar.filename}, ${mdms-komodo-client.jar.filename}"
+                        mode="644" prefix="fei5/lib"/>
+            <tarfileset dir="${lib.dir}" mode="644" prefix="fei5/lib">
+                <include name="${xercesImpl.jar.filename}"/>
+                <include name="${xmlParser.jar.filename}"/>
+                <include name="${log4j.jar.filename}"/>
+                <include name="${dom4j.jar.filename}"/>
+                <include name="${jaxen.jar.filename}"/>
+                <include name="${mail.jar.filename}"/>
+                <include name="${activation.jar.filename}"/>
+            </tarfileset>
+            <tarfileset dir="${doc.dir}/client" includes="README" mode="644"
+                        prefix="fei5"/>
+            <tarfileset dir="${etc.dir}/docs/komodo" mode="644"
+                        prefix="fei5/doc/pdf">
+                <include name="komodo**.pdf"/>
+            </tarfileset>
+            <tarfileset dir="${etc.dir}/config" includes="domain.fei, pwdinterface,
+            pwdclient.conf, krb5.conf, mdmsconfig.pm, mdmsconfig.sh, mdms.lcf,
+            mdmsgui.lcf" mode="644" prefix="fei5/config"/>
+            <tarfileset dir="${etc.dir}/ssl" includes="mdms-fei.keystore, public.der"
+                        mode="644" prefix="fei5/config"/>
+            <tarfileset dir="${etc.dir}/sbin" includes="use_FEI5.csh, use_FEI5.sh"
+                        mode="755" prefix="fei5"/>
+            <!-- removing etc/bin/fei5 commands as they will be taken from GIT -->
+            <tarfileset dir="${etc.dir}" mode="755" prefix="fei5">
+                <include name="bin/fei5**"/>
+                <exclude name="bin/**.csh"/>
+                <include name="bin/pwd**"/>
+                <exclude name="bin/**.bat"/>
+            </tarfileset>
+        </tar>
+        <!-- Gzip the tar file to compress -->
+        <gzip src="${dist.dir}/${mdms-komodo-client.tar.filename}"
+              zipfile="${dist.dir}/${mdms-komodo-client.tar.filename}.gz"/>
+        <delete file="${dist.dir}/${mdms-komodo-client.tar.filename}"/>
+    </target>
+    <target name="package-mdms-komodo-client-zip"
+            depends="prepare-komodo-client-docs">
+        <zip destfile="${dist.dir}/${mdms-komodo-client.zip.filename}">
+            <zipfileset dir="${dist.dir}" includes="${mdms.jar.filename},
+            ${mdms-komodo-lib.jar.filename}, ${mdms-komodo-client.jar.filename}"
+                        prefix="fei5/lib"/>
+            <zipfileset dir="${lib.dir}" prefix="fei5/lib">
+                <include name="${xercesImpl.jar.filename}"/>
+                <include name="${xmlParser.jar.filename}"/>
+                <include name="${log4j.jar.filename}"/>
+                <include name="${mail.jar.filename}"/>
+                <include name="${activation.jar.filename}"/>
+            </zipfileset>
+            <zipfileset dir="${doc.dir}/client" includes="readme.txt" prefix="fei5"/>
+            <zipfileset dir="${etc.dir}/docs/komodo" prefix="fei5/doc/pdf">
+                <include name="komodo**.pdf"/>
+            </zipfileset>
+            <!-- Use GIT config files -->
+            <zipfileset dir="${etc.dir}/config" includes="domain.fei, pwdinterface,
+            pwdclient.conf, krb5.conf, appKSRV.bat, mdmsconfig.bat, mdms.lcf,
+            mdmsgui.lcf" prefix="fei5/config"/>
+            <zipfileset
+                    dir="${src.dir}/jpl/mipl/mdms/FileService/komodo/api/resources"
+                    includes="domain.xsd" prefix="fei5/config"/>
+            <zipfileset dir="${etc.dir}/ssl" includes="mdms-fei.keystore, public.der"
+                        prefix="fei5/config"/>
+            <zipfileset dir="${etc.dir}/sbin" includes="use_FEI5.bat" prefix="fei5"/>
+            <zipfileset dir="${etc.dir}" prefix="fei5">
+            <include name="bin/fei**.bat"/>
+            <include name="bin/pwd**.bat"/>
+            <exclude name="bin/**.csh"/>
+            <exclude name="bin/**.sh"/>
+            </zipfileset>
+        </zip>
+    </target>
+
+    <target name="prepare-komodo-client-docs" depends="init">
+        <property name="komodo.client.readme.file"
+                  location="${etc.dir}/docs/komodo/komodo.client.readme"/>
+        <mkdir dir="${doc.dir}/client"/>
+        <copy file="${komodo.client.readme.file}"
+              tofile="${doc.dir}/client/README">
+            <filterset>
+                <filter token="TIMESTAMP" value="${buildtime}"/>
+            </filterset>
+        </copy>
+        <copy file="${komodo.client.readme.file}"
+              tofile="${doc.dir}/client/readme.txt">
+            <filterset>
+                <filter token="TIMESTAMP" value="${buildtime}"/>
+            </filterset>
+        </copy>
+        <fixcrlf srcdir="${doc.dir}/client" tab="remove" tablength="8" eol="crlf"
+                 includes="**/readme.txt"/>
+        <fixcrlf srcdir="${doc.dir}/client" tab="remove" tablength="8" eol="lf"
+                 includes="**/README"/>
+    </target>
+
+    <target name="compile-mdms" depends="init">
+        <javac destdir="${build.dir}/classes" debug="${build.debug}"
+               optimize="${build.optimize}" deprecation="${build.deprecation}"
+               includeAntRuntime="yes" target="1.7">
+            <src path="${generated.dir}"/>
+            <src path="${src.dir}"/>
+            <exclude name="**/services/query/**"/>
+            <exclude name="**/test/**"/>
+            <exclude name="**/FileService/spider/**"/>
+            <classpath refid="compile.classpath"/>
+        </javac>
+    </target>
+
+    <target name="javancss" depends="init">
+        <property name="javancss.data.dir" location="${build.dir}/javancss"/>
+        <mkdir dir="${javancss.data.dir}"/>
+        <javancss srcdir="${src.dir}" includes="**/*.java" abortOnFail="false"
+                  generateReport="true"
+                  outputfile="${javancss.data.dir}/javancss_metrics.xml" format="xml"/>
+        <style basedir="${javancss.data.dir}" destdir="${javancss.data.dir}"
+               includes="javancss_metrics.xml"
+               style="${etc.dir}/stylesheets/javancss2html.xsl"/>
+    </target>
+</project>

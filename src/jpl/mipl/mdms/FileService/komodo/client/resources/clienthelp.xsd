@@ -1,0 +1,48 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<xs:schema xmlns:xs = 'http://www.w3.org/2001/XMLSchema'>
+	
+  <xs:element name = 'KomodoHelp' type = 'KomodoHelpType' />
+
+  <xs:complexType name = 'KomodoHelpType'>
+    <xs:sequence>
+      <xs:element ref = 'desc' maxOccurs = '1' />
+      <xs:element ref = 'cmd' maxOccurs = 'unbounded' />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name = 'desc' type = 'xs:string' />
+  <xs:element name = 'cmd' type = 'cmdType' />
+
+  <xs:complexType name = 'cmdType'>
+    <xs:sequence>
+      <xs:element ref = 'desc' maxOccurs = '1' />
+      <xs:element ref = 'usage' maxOccurs = '1' />
+      <xs:element ref = 'params' maxOccurs = '1' />
+    </xs:sequence>
+    <xs:attribute name= 'name' type = 'xs:string' use = 'required' />
+    <xs:attribute name= 'type' type = 'xs:string' use = 'required' />
+    <xs:attribute name= 'alt' type = 'xs:string' use = 'optional' />
+    <xs:attribute name= 'see_also' type = 'xs:string' use = 'optional' />
+    <xs:attribute name= 'shortcut' type = 'xs:string' use = 'optional' />
+  </xs:complexType>
+
+  <xs:element name = 'usage' type = 'xs:string' />
+  <xs:element name = 'params' type = 'paramsType' />
+
+  <xs:complexType name = 'paramsType'>
+    <xs:sequence>
+      <xs:element ref = 'param' minOccurs = '0' maxOccurs = 'unbounded' />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name = 'param' type = 'paramType' />
+
+  <xs:complexType name = 'paramType' mixed = 'true'>
+    <xs:sequence>
+      <xs:element ref = 'desc' maxOccurs = '1' />
+    </xs:sequence>
+    <xs:attribute name= 'name' type = 'xs:string' use = 'required' />
+    <xs:attribute name= 'alt' type = 'xs:string' use = 'optional' />
+  </xs:complexType>
+
+</xs:schema>
