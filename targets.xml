@@ -1,0 +1,30 @@
+<!-- common targets -->
+
+<!-- simple noop target to trace flow -->
+<target name="noop">
+    <echo>no-op in ${ant.project.name}</echo>
+</target>
+
+        <!--   init the logging directory -->
+<target name="init-log">
+<condition property="log.dir"
+           value="${env.CATALINA_HOME}/webapps/ROOT/log">
+    <isset property="env.CATALINA_HOME"/>
+</condition>
+<property name="log.dir" location="${masterbuild.dir}/log"/>
+
+<mkdir dir="${log.dir}"/>
+<copy file="${ant.home}/etc/log.xsl"
+      todir="${log.dir}"/>
+<property name="XmlLogger.file"
+          location="${log.dir}/deploy-log.xml"/>
+<echo>logging to ${XmlLogger.file}</echo>
+</target>
+
+        <!--
+          this is a task for common initialisation;
+          each sub project should have 'init' depend on this
+
+         -->
+
+<target name="common-init" depends="init-log"/>

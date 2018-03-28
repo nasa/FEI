@@ -1,0 +1,1401 @@
+package jpl.mipl.mdms.FileService.komodo.ui.savannah.subscription;
+
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import jpl.mipl.mdms.FileService.komodo.api.Constants;
+import jpl.mipl.mdms.FileService.komodo.api.FileType;
+import jpl.mipl.mdms.FileService.komodo.api.SessionException;
+import jpl.mipl.mdms.FileService.komodo.ui.savannah.LoginDialog;
+import jpl.mipl.mdms.FileService.komodo.ui.savannah.SavannahModel;
+import jpl.mipl.mdms.FileService.komodo.ui.savannah.subscription.util.DefaultMetaParameterIO;
+import jpl.mipl.mdms.FileService.komodo.ui.savannah.subscription.util.MetaParameterIO;
+import jpl.mipl.mdms.FileService.komodo.ui.savannah.tools.UserAuthenticationTool;
+import jpl.mipl.mdms.utils.logging.Logger;
+
+/**
+ * <b>Purpose:</b>
+ *  Panel with subscription management controls.  Instantiated with
+ *  an instance of DefaultMetaSubscriptionManager.
+ *
+ *   <PRE>
+ *   Copyright 2005, California Institute of Technology.
+ *   ALL RIGHTS RESERVED.
+ *   U.S. Government Sponsorship acknowledge. 2005.
+ *   </PRE>
+ *
+ * <PRE>
+ * ============================================================================
+ * <B>Modification History :</B>
+ * ----------------------
+ *
+ * <B>Date              Who              What</B>
+ * ----------------------------------------------------------------------------
+ * 03/25/2005        Nick             Initial Release
+ * ============================================================================
+ * </PRE>
+ *
+ * @author Nicholas Toole   (Nicholas.T.Toole@jpl.nasa.gov)
+ * @version $Id: ManagerControlPanel.java,v 1.20 2013/03/30 00:06:21 ntt Exp $
+ *
+ */
+
+public class ManagerControlPanel extends JPanel {
+    
+    //GUI components
+    protected JButton _addButton;
+    private JPanel _buttonPanel;
+    protected JButton _clearButton;
+    private JCheckBox _pauseAllBox;
+    protected JButton _removeButton;
+    protected JSeparator _separator1;
+    private JButton _stopAllButton;
+    protected JPanel _subPanel;
+    protected JLabel _subPanelLabel;
+    protected JScrollPane _subScrollPane;
+    protected MSTable _table;
+    protected MSTableModel _tableModel;
+    private JLabel _totalActiveKeyLabel;
+    private JLabel _totalActiveValLabel;
+    private JLabel _totalCountKeyLabel;
+    private JLabel _totalCountValLabel;
+    protected HistoryDialog _historyDialog = null;
+    
+    protected DefaultMetaSubscriptionManager _manager = null;
+    protected SavannahModel _appModel = null;
+    private Logger _logger = Logger.getLogger(ManagerControlPanel.class.
+                                                             getName());
+    
+    final Map _iconMap = new Hashtable();
+    protected ImageIcon _runIcon,    _pauseIcon,  _historyIcon;
+    protected ImageIcon _removeIcon, _stopIcon;
+    protected ImageIcon _editIcon, _reviewIcon;
+    
+    protected static final int IMAGE_DIMENSION = 16;
+    
+    /*
+     * flag indicating whether newly constructed subscriptions
+     * should be started immediately (true) or if another component
+     * will be responsible for initiating it (false)
+     */
+    protected boolean _autoStart = true;
+    
+    //---------------------------------------------------------------------
+    
+    /** 
+     * Constructor 
+     * @param manager Instance of MetaSubscriptionManager that this
+     * control manipulates/reflects. 
+     */
+    
+    public ManagerControlPanel(DefaultMetaSubscriptionManager manager) {
+        this._manager  = manager;
+        this._appModel = manager.getAppModel();
+        this._manager.addPropertyChangeListener(new ManagerPropertyListener());
+        initComponents();
+        init();
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /** 
+     * This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    protected void initComponents() {//GEN-BEGIN:initComponents
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        _subPanel = new JPanel();
+        _subPanelLabel = new JLabel();
+        _separator1 = new JSeparator();
+        _subScrollPane = new JScrollPane();
+        _tableModel = new MSTableModel();
+        _table = new MSTable(this._manager, this._tableModel);
+        _buttonPanel = new JPanel();
+        _addButton = new JButton();
+        _removeButton = new JButton();
+        _clearButton = new JButton();
+        _stopAllButton = new JButton();
+        _pauseAllBox = new JCheckBox();
+        _totalCountKeyLabel = new JLabel();
+        _totalCountValLabel = new JLabel();
+        _totalActiveKeyLabel = new JLabel();
+        _totalActiveValLabel = new JLabel();
+
+        setLayout(new java.awt.BorderLayout());
+
+        setPreferredSize(new java.awt.Dimension(640, 380));
+        _subPanel.setLayout(new java.awt.GridBagLayout());
+
+        _subPanelLabel.setText("This panel controls active subscriptions within the manager.");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.ipadx = 41;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 20, 0, 0);
+        _subPanel.add(_subPanelLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 569;
+        gridBagConstraints.ipady = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(15, 10, 0, 20);
+        _subPanel.add(_separator1, gridBagConstraints);
+
+        _subScrollPane.setBackground(UIManager.getDefaults().getColor("Table.background"));
+        _table.setToolTipText("Display of subscriptions");
+        _subScrollPane.setViewportView(_table);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(31, 25, 1, 25);
+        _subPanel.add(_subScrollPane, gridBagConstraints);
+
+        _buttonPanel.setLayout(new java.awt.GridBagLayout());
+
+        _addButton.setText(" Add Subscription ");
+        _addButton.setToolTipText("Create and add new subscription");
+        _addButton.setMnemonic(KeyEvent.VK_A);   
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 30, 5, 30);
+        _buttonPanel.add(_addButton, gridBagConstraints);
+
+        _removeButton.setText("Remove Subscription");
+        _removeButton.setToolTipText("Remove selected subscription");
+        _removeButton.setMnemonic(KeyEvent.VK_R);   
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(0, 30, 0, 30);
+        _buttonPanel.add(_removeButton, gridBagConstraints);
+
+        _clearButton.setText(" Clear Inactive ");
+        _clearButton.setToolTipText("Clear all subscriptions that have been stopped or are in error.");
+        _clearButton.setMnemonic(KeyEvent.VK_C);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(0, 30, 0, 30);
+        _buttonPanel.add(_clearButton, gridBagConstraints);
+
+        _stopAllButton.setText("Stop All Subscriptions");
+        _stopAllButton.setToolTipText("Stop all active subscriptions");
+        _stopAllButton.setMnemonic(KeyEvent.VK_S); 
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 30, 5, 30);
+        _buttonPanel.add(_stopAllButton, gridBagConstraints);
+
+        _pauseAllBox.setText("Pause All Subscriptions");
+        _pauseAllBox.setToolTipText("Pause all active subscriptions");
+        _pauseAllBox.setMnemonic(KeyEvent.VK_P); 
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 26, 7, 3);
+        _buttonPanel.add(_pauseAllBox, gridBagConstraints);
+
+        _totalCountKeyLabel.setText("Subscriptions:");
+        _totalCountKeyLabel.setToolTipText("Number of subscriptions in manager");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        _buttonPanel.add(_totalCountKeyLabel, gridBagConstraints);
+
+        _totalCountValLabel.setText("0");
+        _totalCountValLabel.setToolTipText("Number of subscriptions in manager");
+        _totalCountValLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 15);
+        _buttonPanel.add(_totalCountValLabel, gridBagConstraints);
+
+        _totalActiveKeyLabel.setText("Number Active:");
+        _totalActiveKeyLabel.setToolTipText("Number of active subscriptions");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 0.3;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        _buttonPanel.add(_totalActiveKeyLabel, gridBagConstraints);
+
+        _totalActiveValLabel.setText("0");
+        _totalActiveValLabel.setToolTipText("Number of active subscriptions");
+        _totalActiveValLabel.setHorizontalTextPosition(SwingConstants.RIGHT);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 15);
+        _buttonPanel.add(_totalActiveValLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 20, 6, 20);
+        _subPanel.add(_buttonPanel, gridBagConstraints);
+
+        add(_subPanel, java.awt.BorderLayout.CENTER);
+
+    }//GEN-END:initComponents
+
+    //---------------------------------------------------------------------
+    
+    protected void init()
+    {
+        
+        //add action listeners to buttons
+        this._addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae)
+            {
+                createNewMetaSubscription();
+            }
+        });
+        
+        this._removeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae)
+            {
+                removeMetaSubscription();
+            }
+        });
+        
+        this._stopAllButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae)
+            {
+                stopAllMetaSubscriptions();
+            }
+        });
+        
+        this._clearButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae)
+            {
+                clearInactiveMetaSubscriptions();
+            }
+        });
+        
+        
+        //add selection listener to table, (en/dis)ables remove button
+        this._removeButton.setEnabled(_table.getSelectedRow() != -1);
+        this._table.getSelectionModel().addListSelectionListener(
+            new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent lse)
+                {
+                    if (lse.getValueIsAdjusting())
+                        return;                    
+                    boolean canRemove = (_table.getSelectedRow() != -1);
+                    _removeButton.setEnabled(canRemove);                    
+                }
+        });
+
+        this._pauseAllBox.addActionListener(new ActionListener() {
+           public void actionPerformed(ActionEvent ae)
+           {
+               boolean interrupted = _pauseAllBox.isSelected();
+               _manager.setInterrupted(interrupted);
+               
+               /*
+               MetaSubscription[] ms = _manager.getMetaSubscriptions();
+               for (int i = 0; i < ms.length; ++i)
+                   ms[i].setInterrupted(interrupted);
+               
+               _tableModel.fireTableDataChanged();
+               */
+           }
+        });
+        
+        this._table.addMouseListener(new TableMouseListener());
+        
+        initActionIcons();
+    }
+    
+    //---------------------------------------------------------------------
+    
+    protected void initActionIcons()
+    {
+        URL imageURL;
+        String text;
+        
+        //Run
+        text = SubscriptionConstants.STATE_TRANSITION_STRING[
+                         SubscriptionConstants.STATE_RUNNING];
+        imageURL = ManagerControlPanel.class.getResource(
+                                         "resources/play24.png");            
+        _runIcon = new ImageIcon(imageURL, text);
+        _runIcon.setImage(_runIcon.getImage().getScaledInstance(
+                                                IMAGE_DIMENSION, 
+                                                IMAGE_DIMENSION, 
+                                                Image.SCALE_SMOOTH));
+        _iconMap.put(text, _runIcon);
+        
+        //Pause
+        text = SubscriptionConstants.STATE_TRANSITION_STRING[
+                         SubscriptionConstants.STATE_PAUSED];
+        imageURL = ManagerControlPanel.class.getResource(
+                                         "resources/pause24.png");            
+        _pauseIcon = new ImageIcon(imageURL, text);
+        _pauseIcon.setImage(_pauseIcon.getImage().getScaledInstance(
+                                                IMAGE_DIMENSION, 
+                                                IMAGE_DIMENSION, 
+                                                Image.SCALE_SMOOTH));
+        _iconMap.put(text, _pauseIcon);
+        
+        //Terminate
+        text = SubscriptionConstants.STATE_TRANSITION_STRING[
+                         SubscriptionConstants.STATE_TERMINATED];
+        imageURL = ManagerControlPanel.class.getResource(
+                                        "resources/stop24.png");            
+        _stopIcon = new ImageIcon(imageURL, text);
+        _stopIcon.setImage(_stopIcon.getImage().getScaledInstance(
+                                                IMAGE_DIMENSION, 
+                                                IMAGE_DIMENSION, 
+                                                Image.SCALE_SMOOTH));
+        _iconMap.put(text, _stopIcon);
+               
+        
+        //Remove
+        text = "Remove";
+        imageURL = ManagerControlPanel.class.getResource(
+                                        "resources/remove24.png");            
+        _removeIcon = new ImageIcon(imageURL, text);
+        _removeIcon.setImage(_removeIcon.getImage().getScaledInstance(
+                                                IMAGE_DIMENSION, 
+                                                IMAGE_DIMENSION, 
+                                                Image.SCALE_SMOOTH));
+        _iconMap.put(text, _removeIcon);
+        
+        //History
+        text = "History";
+        imageURL = ManagerControlPanel.class.getResource(
+                                        "resources/history24.png");            
+        _historyIcon = new ImageIcon(imageURL, text);
+        _historyIcon.setImage(_historyIcon.getImage().getScaledInstance(
+                                                IMAGE_DIMENSION, 
+                                                IMAGE_DIMENSION, 
+                                                Image.SCALE_SMOOTH));
+        _iconMap.put(text, _historyIcon);
+        
+        //Edit restart
+        text = "Edit";
+        imageURL = ManagerControlPanel.class.getResource(
+                                          "resources/edit_reload24.png");        
+        _editIcon = new ImageIcon(imageURL, text);       
+        _editIcon.setImage(_editIcon.getImage().getScaledInstance(
+                                                IMAGE_DIMENSION,
+                                                IMAGE_DIMENSION,
+                                                Image.SCALE_SMOOTH));
+        
+        //Review
+        text = "Review";
+        imageURL = ManagerControlPanel.class.getResource(
+                                          "resources/review24.png");        
+        _reviewIcon = new ImageIcon(imageURL, text);       
+        _reviewIcon.setImage(_reviewIcon.getImage().getScaledInstance(
+                                                IMAGE_DIMENSION,
+                                                IMAGE_DIMENSION,
+                                                Image.SCALE_SMOOTH));
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Returns the model behind this view/controller
+     * @return Internal instance of MetaSubscriptionManager
+     */
+    
+    protected MetaSubscriptionManager getManager()
+    {
+        return this._manager;
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Return the application model.
+     * @return application model
+     */
+    
+    protected SavannahModel getAppModel()
+    {
+        return this._appModel;
+    }
+    
+
+    //---------------------------------------------------------------------
+    
+    
+    /**
+     * Process of creating a new metasubscription.  Starts with displaying
+     * a panel where user selects subscription type, filetype, and output
+     * directory.  Invokes other creational methods based on the subscription
+     * type provided.
+     */
+    
+    protected void createNewMetaSubscription()
+    {
+        //-------------------------
+        
+        this._logger.debug("Requesting new metasubscription info...");
+        
+        //create the parameter instance
+        DefaultMetaParameters params = new DefaultMetaParameters();
+        params.setDomainFile(this._appModel.getDomainFile());
+        String username = this._appModel.getUsername();
+        String password = this._appModel.getPassword(username);
+        
+        params.setUsername(username);
+        params.setPassword(password);
+        
+        //-------------------------
+        
+        //retrieve filetypes and subscription types
+        String[] fts = this._appModel.getAllFiletypes();
+        String[] metaTypes = SubscriptionConstants.TASK_TYPES_STR;
+        File curDir = this._appModel.getLocalDirectory();
+        
+        //-------------------------
+        
+        //create initial panel 
+        NewMetaSubscriptionPanel nmsPanel = new NewMetaSubscriptionPanel(
+                                                          metaTypes, fts);
+        nmsPanel.setOutputDir(curDir);
+        String curGroup = this._appModel.getCurrentFeiServer();
+        String curFiletype = this._appModel.getCurrentFeiType();
+        if (curGroup != null)
+        {
+            String ft = null;
+            
+            if (curFiletype != null)
+            {
+                ft = FileType.toFullFiletype(curGroup, curFiletype);
+            }
+            else
+            {
+                for (int i = 0; i < fts.length && ft == null; ++i)
+                    if (fts[i].startsWith(curGroup))
+                        ft = fts[i];
+            }
+            
+            //if we found an initial filetype, set it as selected
+            if (ft != null)
+                nmsPanel.setFiletype(ft);
+        }
+        
+        //-------------------------
+        
+        Object[] options = new Object[] {"Next", "Cancel"};
+        int opt = JOptionPane.showOptionDialog(this, nmsPanel, 
+                                               "New Subscription",
+                                               JOptionPane.YES_NO_OPTION, 
+                                               JOptionPane.PLAIN_MESSAGE,
+                                               null, options, options[0]);
+        if (opt == JOptionPane.CLOSED_OPTION || options[opt].equals("Cancel"))
+        {
+            return;
+        }
+        
+        //-------------------------
+        
+        String subType  = nmsPanel.getSubscriptionType();
+        String fileType = nmsPanel.getFiletype();
+        File outputDir  = nmsPanel.getOutputDir();
+
+        params.setFiletype(fileType);
+        params.setOutputDirectory(outputDir.getAbsolutePath());
+        
+        //-------------------------
+        
+        //ensure we have login information
+        try {
+//            String[] info = _authenticateUser(subType + " Login", 
+//                                         username, password, fileType,
+//                                         SubscriptionConstants.
+//                                         MAX_LOGIN_ATTEMPT_COUNT);
+            UserAuthenticationTool authUtil = new UserAuthenticationTool(
+                                                        this._appModel,
+                                                        this);
+            
+            String[] info = authUtil.authenticateUser(subType + " Login", 
+                                        username, password, fileType,
+                                        SubscriptionConstants.
+                                        MAX_LOGIN_ATTEMPT_COUNT);
+            if (info==null || info.length != 2 || info[0]==null || info[1]==null) 
+            {
+                JOptionPane.showMessageDialog(this, "Aborting new session.\n"
+                    + "\nCannot initialize subscription session\nwithout "
+                    + "login information.\n", "New Session Abort",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            else
+            {
+                params.setUsername(info[0]);
+                params.setPassword(info[1]);
+            }
+        } catch (SessionException sesEx) {
+            if (sesEx.getErrno() == Constants.CONN_FAILED)
+            {
+                JOptionPane.showMessageDialog(this,
+                      "Unable to connect to filetype '" +
+                      fileType+"'.\nPlease check network status and "+
+                      "FEI domain file\nconfiguration.",
+                      "Connection Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(this,
+                        "Unable to connect to filetype '" +
+                        fileType+"'.\nMessage: "+sesEx.getMessage(),
+                        "Login Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+            
+        
+        //-------------------------
+        
+        MetaSubscription metaSub = null;
+        if (subType.equalsIgnoreCase(SubscriptionConstants.TASK_NOTIFICATION_STR))
+        {
+            NotificationParameters np = new NotificationParameters(params);
+            metaSub = createNewNotification(np);
+        }
+        else
+        {
+            SubscriptionParameters sp = new SubscriptionParameters(params);
+            metaSub = createNewSubscription(sp);
+        }
+        
+        if (metaSub == null)
+        {
+            return;
+        }
+        
+        //-------------------------
+        
+        //attempt to add to manager
+        try {
+            this._manager.addMetaSubscription(metaSub);
+        } catch (IllegalArgumentException iaEx) {
+            JOptionPane.showMessageDialog(ManagerControlPanel.this,
+                    "Could not add new subscription to manager."
+                    + "\nReason: " + iaEx.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            metaSub.terminate();
+            return;
+        }
+        
+        
+        //if true, start the metasubscription
+        if (_autoStart)
+        {
+            final MetaSubscription fMetaSub = metaSub;
+            Thread msThread = new Thread(metaSub);
+            msThread.setName("Thread_"+metaSub.getName());
+            int lowPriority = (Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2;
+            msThread.setPriority(lowPriority);
+            msThread.start();
+        }
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Displays notification options panel and constructs a new notifcation
+     * based meta-subscription.  Returns the result if successful, else
+     * returns null.
+     * @param params NotificationParameters to populate with options.  It
+     * is required that the filetype and output dir have already been 
+     * set in the parameters.
+     * @return New notification meta-subcription or null.
+     */
+    
+    protected MetaSubscription createNewNotification(
+                                              NotificationParameters params)
+    {
+        MetaSubscription ms = null;
+        NotificationOptionsPanel nPanel = new NotificationOptionsPanel(params);
+        
+        Object[] options = new Object[] {"Done", "Cancel"};
+        int opt = JOptionPane.showOptionDialog(this, nPanel, 
+                                               "Notification Options",
+                                               JOptionPane.YES_NO_OPTION, 
+                                               JOptionPane.PLAIN_MESSAGE,
+                                               null, options, options[0]);
+        
+        if (opt != JOptionPane.CLOSED_OPTION && opt >= 0 && 
+            opt < options.length && options[opt].equals("Done"))
+        {
+            try {
+                ms = MetaSubscriptionFactory.createInstance(
+                        SubscriptionConstants.TASK_NOTIFICATION, params);
+            } catch (SessionException sesEx) {
+                this._logger.debug(null, sesEx);
+                this._logger.error("Error occurred while creating instance "
+                                   + "of notification task.  Message = "
+                                   + sesEx.getMessage());
+                ms = null;
+            }
+        }
+       
+        //DEBUG_START
+        //printParameters(params);
+        //DEBUG_END
+        
+        return ms;
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Displays subscription options panel and constructs a new subscription
+     * based meta-subscription.  Returns the result if successful, else
+     * returns null.
+     * @param params SubscriptionParameters to populate with options.  It
+     * is required that the filetype and output dir have already been 
+     * set in the parameters.
+     * @return New subscription meta-subcription or null.
+     */
+    
+    protected MetaSubscription createNewSubscription(
+                                                SubscriptionParameters params)
+    {
+        MetaSubscription ms = null;
+
+        SubscriptionOptionsPanel sPanel = new SubscriptionOptionsPanel(params);
+        
+        Object[] options = new Object[] {"Done", "Cancel"};
+        int opt = JOptionPane.showOptionDialog(this, sPanel, 
+                                               "Subscription Options",
+                                               JOptionPane.YES_NO_OPTION, 
+                                               JOptionPane.PLAIN_MESSAGE,
+                                               null, options, options[0]);
+        
+        if (opt != JOptionPane.CLOSED_OPTION && opt >= 0 && 
+            opt < options.length && options[opt].equals("Done"))
+        {
+            try {
+                ms = MetaSubscriptionFactory.createInstance(
+                        SubscriptionConstants.TASK_SUBSCRIPTION, params);
+            } catch (SessionException sesEx) {
+                this._logger.debug(null, sesEx);
+                this._logger.error("Error occurred while creating instance "
+                                   + "of subscription task.  Message = "
+                                   + sesEx.getMessage());
+                ms = null;
+            }
+        }
+
+        //DEBUG_START
+        //printParameters(params);
+        //DEBUG_END
+
+        return ms;
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Writes contents of parameters object to standard out for debugging
+     * @param parameters Instance of DefaultMetaParameters to be flushed to
+     *                   standard out.
+     */
+    
+    protected void printParameters(DefaultMetaParameters parameters)
+    {
+        try {
+            MetaParameterIO mpIo = new DefaultMetaParameterIO();
+            mpIo.write(parameters, System.out, MetaParameterIO.FORMAT_PLAIN);
+        } catch (IOException ioEx) {
+            ioEx.printStackTrace();
+        }
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Terminates and removes all metasubscriptions.
+     */
+    
+    protected void stopAllMetaSubscriptions()
+    {
+        int rv = JOptionPane.showConfirmDialog(ManagerControlPanel.this, 
+                        "Terminate ALL subscriptions?", "Stop Confirm", 
+                        JOptionPane.YES_NO_CANCEL_OPTION);
+        
+        if (rv != JOptionPane.YES_OPTION)
+            return;
+        
+        MetaSubscription[] msArray = this._manager.getMetaSubscriptions();
+        for (int i = 0; i < msArray.length; ++i)
+        {
+            if (msArray[i].getState() != SubscriptionConstants.STATE_TERMINATED)
+                msArray[i].terminate();            
+            
+            //this._manager.removeMetaSubscription(msArray[i]);
+        }
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Removes selected metasubscription from the manager.
+     * If subscription is active, user must confirm active.
+     * Metasubscription is then terminated and removed.
+     */
+    
+    protected void removeMetaSubscription() {
+        int rowIndex = _table.getSelectedRow();
+        
+        
+        //using -1 for column index should return the element defining
+        //the entire row of table
+        MetaSubscription ms = (MetaSubscription) _table.getModel().
+                                                 getValueAt(rowIndex, -1);
+        
+        if (ms != null)
+        {
+            if (ms.getState() != SubscriptionConstants.STATE_TERMINATED)
+            {
+                MetaParameters mp = ms.getParameters();
+                Boolean stayalive = (Boolean) mp.get(SubscriptionConstants.
+                                                     KEY_STAYALIVE);
+                String confirmMessage = null;
+                
+                if (stayalive != null && stayalive.equals(Boolean.TRUE))
+                {
+                    confirmMessage = "Warning: This session has persistence" +
+                    " enabled.\n\nTerminate and remove selected subscription?";
+                }
+                else
+                {
+                    confirmMessage = "Terminate and remove selected subscription?";
+                }
+                
+                int rv = JOptionPane.showConfirmDialog(
+                            ManagerControlPanel.this, 
+                            confirmMessage, 
+                            "Confirm Remove", JOptionPane.YES_NO_OPTION);
+                if (rv != JOptionPane.YES_OPTION)
+                {
+                    return;
+                }
+                
+                ms.terminate();
+            }
+            
+            this._manager.removeMetaSubscription(ms);
+        }
+    }
+
+    //---------------------------------------------------------------------
+    
+    /**
+     * Removes subscriptions that are either terminated or in error state.
+     * If in error state, the subscription is formally terminated before
+     * removal.
+     */
+    
+    protected void clearInactiveMetaSubscriptions()
+    {
+        //determine set of terminated subscriptions (term/error)
+        List inactives = new ArrayList();
+        MetaSubscription[] msArray = this._manager.getMetaSubscriptions();
+        
+        for (int i = 0; i < msArray.length; ++i)
+        {
+            if (msArray[i].getState() == SubscriptionConstants.STATE_TERMINATED
+                || msArray[i].getState() == SubscriptionConstants.STATE_ERROR)
+            {
+                inactives.add(msArray[i]);
+             
+                //terminate error'ed subscriptions
+                if (msArray[i].getState() == SubscriptionConstants.STATE_ERROR)
+                    msArray[i].terminate();
+            }
+        }
+        
+        //remove that set from the manager
+        int numInactive = inactives.size();
+        for (int i = 0; i < numInactive; ++i)
+        {
+            MetaSubscription ms = (MetaSubscription) inactives.get(i);
+            this._manager.removeMetaSubscription(ms);
+        }
+    }
+    
+//---------------------------------------------------------------------
+    
+    /**
+     * Terminates selected meta subscription, displays options for
+     * the user to edit, and start a new meta subscription.
+     */    
+    protected void editRestartMetaSubscription()
+    {
+        int rowIndex = _table.getSelectedRow();
+        
+        
+        //using -1 for column index should return the element defining
+        //the entire row of table
+        MetaSubscription ms = (MetaSubscription) _table.getModel().
+                                                 getValueAt(rowIndex, -1);
+        
+        if (ms != null)
+        {
+            if (ms.getState() != SubscriptionConstants.STATE_TERMINATED)
+            {
+                int rv = JOptionPane.showConfirmDialog(
+                            ManagerControlPanel.this, 
+                            "The selected subscription will be terminated\n" +
+                            " and a new one will be started with your\n" +
+                            " updated parameters.  \n\n" +
+                            "Are you sure you want to do this?", 
+                            "Confirm edit/restart", JOptionPane.YES_NO_OPTION);
+                if (rv != JOptionPane.YES_OPTION)
+                {
+                    return;
+                }
+                // terminate
+                ms.terminate();
+            }
+            
+           // show params, allow edits, and start
+           MetaParameters oldParams = ms.getParameters();
+           MetaSubscription metaSub = null;
+           if (oldParams instanceof NotificationParameters)
+           {
+               metaSub = createNewNotification((NotificationParameters)oldParams);
+           }
+           else
+           {
+               metaSub = createNewSubscription((SubscriptionParameters)oldParams);
+           }
+           
+           if (metaSub == null)
+           {
+               return;
+           }
+           
+           //-------------------------
+           
+           //attempt to add to manager
+           try {
+               this._manager.addMetaSubscription(metaSub);
+           } catch (IllegalArgumentException iaEx) {
+               JOptionPane.showMessageDialog(ManagerControlPanel.this,
+                       "Could not add new subscription to manager."
+                       + "\nReason: " + iaEx.getMessage(), "Error",
+                       JOptionPane.ERROR_MESSAGE);
+               metaSub.terminate();
+               return;
+           }
+           
+           
+           //if true, start the metasubscription
+           if (_autoStart)
+           {
+               final MetaSubscription fMetaSub = metaSub;
+               Thread msThread = new Thread(metaSub);
+               msThread.setName("Thread_"+metaSub.getName());
+               int lowPriority = (Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2;
+               msThread.setPriority(lowPriority);
+               msThread.start();
+           }           
+            
+            // remove old meta subscription
+            this._manager.removeMetaSubscription(ms);
+        }
+    }
+      
+    
+//---------------------------------------------------------------------
+    
+    /**
+     * Reviews the options for selected meta subscription, displays options for
+     * the user to edit as read only
+     */
+    
+    protected void reviewMetaSubscription()
+    {
+        int rowIndex = _table.getSelectedRow();
+        
+        
+        //using -1 for column index should return the element defining
+        //the entire row of table
+        MetaSubscription ms = (MetaSubscription) _table.getModel().
+                                                 getValueAt(rowIndex, -1);
+        
+        if (ms != null)
+        {            
+           // show params, allow edits, and start
+           MetaParameters oldParams = ms.getParameters();
+           MetaSubscription metaSub = null;
+           JPanel optionsPanel = null;
+           if (oldParams instanceof NotificationParameters)
+           {              
+               optionsPanel = new NotificationOptionsPanel(
+                                                    (NotificationParameters)oldParams,
+                                                    true);               
+               
+           }
+           else
+           {
+               optionsPanel = new SubscriptionOptionsPanel(
+                                                   (SubscriptionParameters)oldParams,
+                                                   true); 
+           }
+           
+           Object[] options = new Object[] {"Done"};
+           int opt = JOptionPane.showOptionDialog(this, optionsPanel, 
+                                                  "Review Options",
+                                                  JOptionPane.OK_OPTION, 
+                                                  JOptionPane.PLAIN_MESSAGE,
+                                                  null, options, options[0]);
+        
+           
+           //-------------------------
+           
+        }
+    }
+    
+    
+    
+    //---------------------------------------------------------------------
+    
+    protected void refresh()
+    {
+        MetaSubscription[] ms = _manager.getMetaSubscriptions();
+        int total = ms.length;
+        int active = 0;
+        for (int i = 0; i < total; ++i)
+            if (ms[i].getState() != SubscriptionConstants.
+                                    STATE_TERMINATED &&
+                ms[i].getState() != SubscriptionConstants.
+                                    STATE_ERROR) 
+                ++active;
+            
+        _totalActiveValLabel.setText(active+"");
+        _totalCountValLabel.setText(total+"");
+    }
+
+    //---------------------------------------------------------------------
+    
+//    /**
+//     * Attempts to authenticate user for a specific filetype.  Will attempt
+//     * at most maxAttempts times before aborting.  
+//     * @param title Title to be displayed for input panels
+//     * @param username Initial username  Can be null.
+//     * @param password Initial password. Can be null.
+//     * @param fullfiletype Full filetype to which user is attempting to 
+//     *        connect.
+//     * @param maxAttempts Maximum number of attempts to authenticate before
+//     *        aborting.
+//     * @return String[] of length two where first entry is username,
+//     *        and second entry is password if successful.  Null otherwise.
+//     */
+//    
+//    protected String[] _authenticateUser(String title, 
+//                                         String username,
+//                                         String password,
+//                                         String fullfiletype,
+//                                         int maxAttempts)
+//                                         throws SessionException
+//    {
+//        String[] info = null;
+//        boolean success = false;
+//        int attemptCount = 0;
+//        String servergroup = FileType.extractServerGroup(fullfiletype);
+//        String filetype = FileType.extractFiletype(fullfiletype);
+//                
+//        //do we already have username/pwd?  If not, get it
+//        if (username == null || password == null)
+//        {
+//            
+//            info = _getLoginInfo(title, username,
+//                                 fullfiletype);  
+//            username = info[0];
+//            password = info[1];
+//        }
+//        else
+//        {
+//            info = new String[] {username, password};
+//        }
+//        
+//        while (info != null && !success && attemptCount < maxAttempts)
+//        {
+//            if (_appModel.canUserConnect(info[0], info[1],
+//                                         servergroup, filetype))
+//            {
+//                success = true;
+//            }
+//            else
+//            {
+//                ++attemptCount;
+//                if (attemptCount < SubscriptionConstants.MAX_LOGIN_ATTEMPT_COUNT)
+//                {
+//                    JOptionPane.showMessageDialog(this,
+//                        "Invalid login for user '"+username+"' to '"+fullfiletype
+//                        +"'.\nPlease re-enter "+
+//                        "username and password in login window.",
+//                        "Login Error", JOptionPane.ERROR_MESSAGE);
+//                    info = _getLoginInfo(title, username, 
+//                                         fullfiletype);
+//                }
+//                else
+//                {
+//                    JOptionPane.showMessageDialog(this,
+//                            "Invalid login.  Max attempt count ("+
+//                            SubscriptionConstants.MAX_LOGIN_ATTEMPT_COUNT+
+//                            ") reached!", "Login Error", 
+//                            JOptionPane.ERROR_MESSAGE); 
+//                }
+//            }            
+//        }
+//  
+//        if (!success)
+//        {            
+//            info = null;
+//        }
+//        
+//        return info;
+//    }
+//    
+//    protected String[] _getLoginInfo(String title, String username,
+//                                     String message)
+//    {
+//        String[] info = null;
+//        
+//        LoginDialog ld = new LoginDialog(title, username, message);
+//        int reply = ld.showDialog(this);
+//        if (reply == JOptionPane.OK_OPTION)
+//        {
+//            info = new String[2];
+//            info[0] = ld.getUsername();
+//            info[1] = ld.getPassword();
+//        }
+//        
+//        return info;
+//    }
+    
+    //---------------------------------------------------------------------
+    //---------------------------------------------------------------------
+    
+    /**
+     * Listens to the manager instance for changes to the the
+     * set of subscriptions being managed.
+     */
+    
+    class ManagerPropertyListener implements PropertyChangeListener
+    {
+        public void propertyChange(PropertyChangeEvent pce)
+        {
+            String propName = pce.getPropertyName();
+            
+            if (propName.equalsIgnoreCase(DefaultMetaSubscriptionManager.
+                                          PROPERTY_META_SUBSCRIPTION_SET))
+            {
+                //set of subscriptions has changed, update the table model
+                MetaSubscription[] ms = _manager.getMetaSubscriptions();
+                _tableModel.replaceAll(ms);
+                refresh();  
+            }
+            else if (propName.equalsIgnoreCase(DefaultMetaSubscriptionManager.
+                                            PROPERTY_META_SUBSCRIPTION_ENTRY))
+            {
+                //an entry in the manager has been updated, locate the index
+                //in the table, then notify it to refresh that row to
+                //update its reflected state
+                int id = ((Integer) pce.getNewValue()).intValue();
+                int rowIndex = _tableModel.getRowWithId(id);
+                if (rowIndex != -1)
+                {
+                    _tableModel.fireTableRowsUpdated(rowIndex, rowIndex);
+                    refresh();
+                }
+            }
+                
+        }
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Listener for mouse events on the table.  If popup action,
+     * a pop-up menu will be displayed with possible actions.
+     */
+    
+    class TableMouseListener extends MouseAdapter 
+    {
+        public void mouseClicked(MouseEvent me) 
+        {
+            if (!(me.getSource() instanceof JComponent))
+                return;
+            
+            JComponent c = (JComponent) me.getSource();
+            
+            int row = _table.rowAtPoint(me.getPoint());
+            if (row == -1 || row >= _table.getRowCount())
+                return;
+
+            
+            MetaSubscription element = (MetaSubscription) 
+                                       _tableModel.elementAt(row);
+            
+            // if right mouse button clicked (or me.isPopupTrigger())
+            if (SwingUtilities.isRightMouseButton(me)) 
+            {   
+               JPopupMenu menu = createPopupMenu(element, me.getPoint());
+               if (menu != null)
+               {                   
+                   //if not selected, then select it
+                   if (!_table.getSelectionModel().isSelectedIndex(row))
+                       _table.getSelectionModel().setSelectionInterval(row, row);
+                   menu.show(c, me.getX(), me.getY());
+               }
+            }        
+
+            else if (me.getClickCount() == 2)  // Double-click 
+            {            
+                showHistoryDialog(element);
+            } 
+        }
+    }
+    
+    //---------------------------------------------------------------------
+    
+    protected void showHistoryDialog(MetaSubscription ms)
+    {
+        HistoryPanel hPanel = new HistoryPanel(ms);
+        if (hPanel == null)
+            return;
+    
+        if (_historyDialog == null)
+        {
+            _historyDialog = new HistoryDialog(hPanel);
+            _historyDialog.setLocationRelativeTo(
+                                        ManagerControlPanel.this);
+            _historyDialog.pack();
+        }
+        else
+        {
+            _historyDialog.setHistoryPanel(hPanel);
+        }
+
+        _historyDialog.setVisible(true);
+    }
+    
+    //---------------------------------------------------------------------
+    
+    /**
+     * Creates a popup menu for a metasubscription.
+     * @param ms MeaSubscription instance for which menu will be displayed
+     * @param point Point from mouse event causing this popup
+     * @return Popup menu constructed from the ms state, null if no action
+     *         to be taken.
+     */
+    protected JPopupMenu createPopupMenu(final MetaSubscription ms, Point point)
+    {        
+        if (point == null)
+            return null;
+                
+        AbstractAction action = null;
+        int[] nextStates = SubscriptionConstants.getNextStates(ms.getState());
+        
+        //if (nextStates.length == 0)
+        //    return null;
+        
+        JPopupMenu menu = new JPopupMenu();
+        
+        action = new AbstractAction("History", _historyIcon) {
+            public void actionPerformed(ActionEvent ae) {
+                showHistoryDialog(ms);
+            }
+        };
+        menu.add(action); 
+        menu.addSeparator();
+        
+        if (nextStates.length > 0)
+        {
+            for (int i = 0; i < nextStates.length; ++i)
+            {
+                final int nextState = nextStates[i];
+                String trans = SubscriptionConstants.STATE_TRANSITION_STRING[
+                                                                   nextState];
+                ImageIcon icon = (ImageIcon) _iconMap.get(trans);
+                action = new AbstractAction(trans, icon) {
+                    public void actionPerformed(ActionEvent ae) {
+                        if (nextState == SubscriptionConstants.STATE_TERMINATED)
+                        {
+                            int rVal = JOptionPane.showConfirmDialog(
+                                             ManagerControlPanel.this,
+                                             "Terminate this subscription?",
+                                             "Confirm Termination",
+                                             JOptionPane.YES_NO_OPTION,
+                                             JOptionPane.QUESTION_MESSAGE);
+                            if (rVal != JOptionPane.YES_OPTION)
+                                return;
+                        }
+                        ms.setState(nextState);
+                    }
+                };
+                menu.add(action);            
+            }
+            menu.addSeparator();
+        }
+        
+        //  View options used for subscription
+        action = new AbstractAction("Review options", _reviewIcon) {
+            public void actionPerformed(ActionEvent ae) {
+                reviewMetaSubscription();
+            }
+        };
+        menu.add(action);
+        //menu.addSeparator();
+        
+        
+        //  Add edit options and "restart" button
+        action = new AbstractAction("Edit and restart", _editIcon) {
+            public void actionPerformed(ActionEvent ae) {
+                editRestartMetaSubscription();
+            }
+        };
+        menu.add(action);
+        menu.addSeparator();
+        
+        action = new AbstractAction("Remove", _removeIcon) {
+            public void actionPerformed(ActionEvent ae) {
+                removeMetaSubscription();
+            }
+        };
+        menu.add(action); 
+        
+        return menu;
+    }
+    
+    //---------------------------------------------------------------------
+    
+    protected JPanel createHistoryPanel(MetaSubscription ms)
+    {
+        JPanel panel = new HistoryPanel(ms);
+        
+        return panel;
+    }
+    
+    //---------------------------------------------------------------------
+    
+    class HistoryDialog extends JDialog
+    {
+        HistoryPanel _hp = null;
+        public HistoryDialog(HistoryPanel hp) {
+            super();
+            setTitle("Subscription History");
+            setModal(false);
+            setHistoryPanel(hp);
+        }
+        public HistoryPanel getHistoryPanel() {
+            return this._hp;
+        }
+        public void setHistoryPanel(HistoryPanel hp) {
+            HistoryPanel oldPanel = this._hp;
+            this._hp = hp;
+            if (oldPanel != null)
+            {
+                this.getContentPane().remove(oldPanel);
+                oldPanel.nullify();
+            }
+            if (hp != null)
+            {
+                this.getContentPane().add(hp);
+            }
+        }
+    }
+    
+    //---------------------------------------------------------------------
+    //---------------------------------------------------------------------
+    
+    public static void main(String[] args)
+    {
+        SavannahModel model = new SavannahModel();
+        DefaultMetaSubscriptionManager manager = new DefaultMetaSubscriptionManager(model);
+        
+        JFrame testFrame = new JFrame("Test");
+        JPanel panel = new ManagerControlPanel(manager);
+        testFrame.getContentPane().add(panel);
+        
+        testFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        testFrame.pack();
+        testFrame.setVisible(true);
+    }
+}

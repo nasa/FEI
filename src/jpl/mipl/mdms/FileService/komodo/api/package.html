@@ -1,0 +1,113 @@
+<html>
+<head>
+<!--
+   @author T. Huang, {Thomas.Huang@jpl.nasa.gov}
+   @version $Id: package.html,v 1.4 2006/07/25 00:14:49 ntt Exp $
+-->
+<title>Komodo API Classes</title>
+</head>
+<body>
+Package containing Komodo APIs to development client applications that are clients of the Komodo framework.
+<BR><BR>
+<hr align="center" width="75%">
+<BR>
+Below are a list of properties used by various components of the FEI client.
+
+<DL>
+<DT><b><i>komodo.client.timeout</i></b>
+<DD>- Number of seconds connection will wait for read operation before throwing a timeout signal.<BR>
+<DD>- Posivitve integer, or 0 for no timeout.  Units is milliseconds.
+<DD>- Default: 30000 milliseconds (5 minutes) 
+<BR><BR>
+<DT><b><i>komodo.keep.alive</i></b>
+<DD>- Keep alive time.  Number of milliseconds a push subscription/notification will wait before sending a Ping request.
+<DD>- Positive integer in the range of (30000, 300000).  Units is milliseconds.
+<DD>- Default: 180000 ms (3 minutes)
+<BR><BR>
+<DT><b><i>komodo.restart.dir</i></b>
+<DD>- Restart directory.
+<DD>- String of valid directory path.
+<DD>- Default: Checks $FEI5CCDIR. If not defined, then user home directory.
+<BR><BR>
+<DT><b><i>javax.net.ssl.trustStore</i></b>
+<DD>- Path to the keystore file used for SSL communication.
+<DD>- String of valid keystore filepath.
+<DD>- Default: $FEI5/mdms-fei.keystore
+<BR><BR>
+<DT><b><i>komodo.config.dir</i></b>
+<DD>- Komodo configuration directory.  Contains config files used by the Komodo framework,
+<DD>- String of valid directory path.
+<DD>- Default: $FEI5
+<BR><BR>
+<DT><b><i>komodo.domain.file</i></b>
+<DD>Location of the FEI domain file containing server group and filetype information.
+<DD>String of valid domain file path.
+<DD>Default: $FEI5/domain.fei
+<BR><BR>
+<DT><b><i>mdms.logging.config</i></b>
+<DD>- Logging configuration file. Controls logger verbosity and targets.
+<DD>- String of valid logger configuration file path.
+<DD>- Default: $FEI5/mdms.lcf (mdmsgui.lcf for GUI applications)
+<BR><BR>
+<DT><b><i>komodo.query.interval</i></b>
+<DD>- Interval between successive queries for pull-type subscription/notification.
+<DD>- Positive integer, units in minutes.
+<DD>- Default: 1 minute
+<BR><BR>
+<DT><b><i>komodo.client.pulse</i></b>
+<DD>- Sets the number of seconds between a client pulse to server. 0 means no pulse.
+<DD>- Positive integer, units in seconds.
+<DD>- Default: 0 (no pulse)
+<BR><BR>
+<DT><b><i>javax.xml.parsers.DocumentBuilderFactoryImpl</i></b>
+<DD>DOM document builder factory implementation class.
+<DD>String of full classname.
+<DD>Default: None
+<BR><BR>
+<DT><b><i>javax.xml.parsers.SAXParserFactory</i></b>
+<DD>- SAX parser factory implementation class.
+<DD>- String of full classname.
+<DD>- Default: None.
+<BR><BR>
+<DT><b><i>org.xml.sax.driver</i></b>
+<DD>- SAX parser driver implementation class
+<DD>- String of full classname.
+<DD>- Default: None
+<BR><BR>
+<DT><b><i>mdms.user.application</i></b>
+<DD>- Identifies the launching application name for messages.
+<DD>- String of application name.
+<DD>- Default: None.
+<BR><BR>
+<DT><b><i>java.net.preferIPv4Stack</i></b>
+<DD>- Sets preference for IPv4 Stack for network.
+<DD>- String of 'true' or 'false'
+<DD>- Default: false
+<BR><BR>
+<DT><b><i>mdms.enable.debug</i></b>
+<DD>- Enables debug message.
+<DD>- String of 'true' or 'false'
+<DD>- Default: false
+<BR><BR>
+<DT><b><i>mdms.user.operation</i></b>
+<DD>- Defines the operation of the application. Used with the utility client.
+<DD>- One of komodo.util.(add,accept,get,subscribe,notify,crc,checkfiles,check,
+                      delete,display,makeclean,list,rename,replace,reference,
+                      comment,showtypes,login,credList,logout)
+<DD>- Default: None.
+<BR><BR>
+<DT><b><i>java.awt.headless</i></b>
+<DD>- Property that can be set for X11 or headless environments.
+<DD>- String of 'true' or 'false'
+<DD>- Default: false
+<BR><BR>
+<DT><b><i>com.apple.backgroundOnly</i></b>
+<DD>- Allows the application to run without displaying a Java icon in a Mac OS dock.
+<DD>- String of 'true' or 'false'
+<DD>- Default: false
+</DL>
+
+<hr align="center" width="75%">
+</body>
+</html>
+

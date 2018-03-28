@@ -1,0 +1,156 @@
+This document details the MDMS Komodo Client Handler framework.  
+
+Disclaimer: This framework is still evolving, so this document may have inconsistencies with the latest code source.
+
+Author: Nicholas Toole (nicholas.toole@jpl.nasa.gov)
+$Id: komodo_handlers.txt,v 1.4 2011/06/01 21:42:48 ntt Exp $
+
+
+=======================================================================
+
+** Komodo Handlers
+
+The Komodo client handler framework presents an opportunity to extend the behavior for file events and errors.  Contributors can implement their own functionality, package it as a plug-in, and add it to the framework.
+
+Background: The original motivation was to support disk-management on remote subscriptions for MSL, to ensure that subscriptions would not consume all available disk space.  In order to prevent project-specific knowledge in the FEI core, the handler framework was proposed to allow external features to react to FEI events, currently file events (i.e. file get, file add, etc) and errors.
+
+=======================================================================
+  CREATING A HANDLER
+=======================================================================
+
+** Implementing the handler
+
+The interface a handler must implement is jpl.mipl.mdms.FileService.komodo.client.handlers.FileEventHandler.
+Methods of FileEventHandler:
++ initialize(FileEventsContext, FileEventHandlerInfo): initializes the  
+  handler instance, including setup and resource allocation.
++ getName(): returns the name of the handler
++ getDescription(): returns description of the handler
++ getVersion(): return the version of handler
++ getId(): return unique handler id
++ getProperty(String): return property value
++ eventOccurred(FileResultEvent): handles file events
++ errorOccurred(FileResultError): handles file errors
++ close(): closes handler, releases resources
+
+There is an abstract class that takes care of returning handler metadata (name, description, version, property); jpl.mipl.mdms.FileService.komodo.client.handlers.AbstractFileEventHandler.  By extending this class, the only methods the must be provided are:
++ initialize(FileEventsContext, FileEventHandlerInfo): initializes the  
+  handler instance, including setup and resource allocation.
++ eventOccurred(FileResultEvent): handles file events
++ errorOccurred(FileResultError): handles file errors
++ close(): closes handler, releases resources
+
+
+Two primary events are processed by the handler:
+
+- FileResultEvent
+The FileResultEvent parameter encapsulates information associated with an FEI action.  This includes the actionId, which represents the operation being performed (i.e. GET, AUTOGET, DELETE) and the associated Result object with details about an affected file.  Handlers can filter based on actionId to react to a specific subset of events.
+
+- FileResultError
+The FileResultError parameter encapsulates information associated with an FEI action and error.  This includes the actionId, which represents the operation being performed (i.e. GET, AUTOGET, DELETE).  It may include one or both of the Result object representing the error and a caught Throwable instance.  If either the Result is supplied, or the Throwable is an instance of SessionException, then the error message and errno code can be retrieved.  Handlers can then filter based on actionId and errno to react to a specific subset of errors.
+
+
+=======================================================================
+
+** Packaging the Handler
+
+Handlers are packaged as a Jar file containing all classes of the implementation.  It must also contain a handler descriptor that contains all the metadata associated with the handler (see section below for more information).  This descriptor must be located within the Jar as 'jpl.mipl.mdms.FileService.komodo.client.handlers.handler.xml'.
+
+Example: myhandler.jar
+
+META-INF/services/komodo.filehandler.xml             <-- handler descriptor file
+gov/nasa/jpl/crops/fei/handlers/CropsConstants.class
+gov/nasa/jpl/crops/fei/handlers/CropsDatastore.class
+gov/nasa/jpl/crops/fei/handlers/CropsHandler.class   <-- extends 'AbstractFileEventHandler'
+gov/nasa/jpl/crops/fei/handlers/CropsUtils.class
+
+
+=======================================================================
+
+** Handler Descriptor
+
+When creating a plug-in, contributors must supply a handler descriptor that will be loaded and read during framework initialization.  This descriptor will contain basic identifier information (name, id, etc), the name of the implementation class, and optional properties.
+
+The XML Schema for the descriptor can be found in jpl.mipl.mdms.FileService.komodo.client.handlers.resources.handlerplugin.xsd
+
+The location of this descriptor will be (within the handler Jar file): META-INF/services/komodo.filehandler.xml
+
+Example outlining descriptor:
+
+<fei:handlerplugin xmlns:xsi="..." xmlns:fei="...">
+  <fei:id>Crops_Fei_Handler</fei:id>
+  <fei:name>Crops Fei Subscription Handler</fei:name>
+  <fei:version>1.0.2</fei:version>
+  <fei:description>Crops DB gets new entry for each file received from subscription session.</fei:description>
+  <fei:org>CRops</fei:org>
+  <fei:handler>
+     <fei:implementation>gov.nasa.jpl.crops.fei.handlers.CropsHandler</fei:implementation>
+     <fei:properties>
+       <fei:property name="databaseLocation" value="jdbc:oracle:thin:system/crops@ora80nt:1521:ops" />
+       <fei:property name="tableName" value="komodo_receivables" />
+     </fei:properties>
+  </fei:handler>
+</fei:handlerplugin>
+
+The elements id, name, version, description and org are fairly standard.  In the handler element, a required sub-element 'implementation' indicates the handler class instance.  This class must implement the FileEventHandler interface discussed above.  The other sub-element, 'properties', allows the descriptor to provide property names and values to the handler during the initialization stage.
+
+=======================================================================
+
+=======================================================================
+
+=======================================================================
+  USING HANDLER FRAMEWORK
+=======================================================================
+
+
+=======================================================================
+
+** Enabling Handlers
+
+Prior to using the handler framework, it must be enabled.
+
+Currently, there are two approaches: 
+
+1) Include the following JVM property at the command line/launcher script: '-Dkomodo.filehandling.enable=true'.   The handler manager will check for this property during startup.  
+2) In source code, use the manager constructor that takes a forceEnabled parameter and to pass a boolean TRUE as the argument.
+
+If enabled, then any discoverable plug-ins will be collected and loaded; otherwise no plug-ins will be loaded.  
+
+=======================================================================
+
+** Including Handlers (Making Plugins Discoverable)
+
+Because the framework treats the handler is a plug-in, then it must first be packaged as described above as a Java ARchive (JAR) file.
+Once packaged, simply ensure that the plug-in will be added to the classpath, either by setting the system environment variable or using the JVM -classpath argument.
+
+Currently, while the plug-in may be discovered by the framework, it must explicitly be enabled by including its id in a manifest.  There are two approaches:
+1) Include a file name '.komodo.filehandler.manifest' in your output directory 
+2) Specify the system property komodo.filehandler.manifest with a value as the location of the manifest file.
+
+The format of the file is a simply list file including one plug-in handler id per line.
+
+A utility can be used to query available plugins and also to create the manifest file.
+
+$ java jpl.mipl.mdms.FileService.komodo.client.handlers.HandlerUtility
+
+If any plugins are located, this command will dump each plugin's id per line.  Piping output to a file creates a manifest file.
+
+For more information on plugins, use the -verbose option in the above command.
+
+=======================================================================
+
+** FEI5 Commands Using Handlers
+
+To load and use the handlers, the optional argument 'filehandler' must be included with the command.
+
+Note: This applies to file operations (i.e. fei5add, fei5get, fei5list, etc).  Non-file operations do not currently support this framework.  
+
+  i.e. fei5get sg:type 'product_*.dat' filehandler
+  i.e. fei5subscribe sg:type filehandler
+
+ Current supported operations: fei5accept, fei5add, fei5comment, fei5delete, fei5get, fei5list, fei5notify, fei5register, fei5unregister, fei5rename, fei5replace, fei5subscribe
+
+
+=======================================================================
+
+=======================================================================

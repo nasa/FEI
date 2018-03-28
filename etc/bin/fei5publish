@@ -1,0 +1,134 @@
+#!/usr/bin/env python
+#################################################################################
+# Start up ClientDaemon if necessary, and link files needing transfer into
+# the staging directory.
+#
+# History:
+#
+#	2011-07-20		Initial version.		Paul Springer
+#################################################################################
+#
+import	os
+import	sys
+import	string
+import	socket
+import  shutil
+import	subprocess
+import	time
+
+# These should both be changed for the real operational version
+QueRoot		= "."
+# StartDaemon	= "java jpl.mipl.mdms.FileService.komodo.client.ClientDaemon"
+
+#===============================================================================
+# Print usage information
+#===============================================================================
+def	PrintHelpBanner():
+#
+	print "\nUsage: (v1.0)"
+	print "        fei5publish <FEI server>:<FEI filetype> <filename> <staging directory> <log directory>\n"
+	return( 0)
+
+#===============================================================================
+#	Start up a new daemon if necessary, for this server:type pair
+#===============================================================================
+def	StartJavaDaemon( DirPath, Server, Filetype, LogDir):
+		
+#	ShellCommand = StartDaemon+" "+DirPath+" "+Server+" "+Filetype+" "+LogDir+" &";
+#	return( os.system( ShellCommand))
+#	p = subprocess.Popen( ShellCommand, shell=True )
+#	p = subprocess.Popen( ShellCommand )
+#	p = subprocess.Popen( ['sleep', '10000'] )
+#	p = subprocess.Popen( ['java', '-cp', '/Users/pls/MGSS/java/build/classes', 'jpl.mipl.mdms.FileService.komodo.client.ClientDaemon', DirPath ] )
+
+
+        #  Determine where to get the libraries
+	if os.environ.has_key('V2HTML'):
+		p = subprocess.Popen( ['java', 'jpl.mipl.mdms.FileService.komodo.client.ClientDaemon', DirPath, Server, Filetype, LogDir ] )
+	else:
+		CPoption = os.environ['FEI5'] + "/../lib/*"
+		p = subprocess.Popen( ['java','-cp',CPoption, 'jpl.mipl.mdms.FileService.komodo.client.ClientDaemon', DirPath, Server, Filetype, LogDir ] )
+		
+	print "Started process ", p.pid
+	LockFileName = "/tmp/.FeiDaemon." + FeiServer + "." + FeiFileType + "." + str(p.pid) + ".lock"
+	open( LockFileName, 'w' ).close()   # just create the file as a lock
+#	time.sleep(60)
+#	p.kill()
+#	p.send_signal(2)
+#	p.wait()
+#	return os.waitpid(p.pid, 0)[1]
+	return
+
+
+#===============================================================================
+# Check if any "ClientDaemon" process is running.
+#===============================================================================
+def	IsDaemonRunning( DirPath, Server, Filetype ):
+
+	Stem = ".FeiDaemon." + Server + '.' + Filetype # Stem + the PID make it unique
+	# Make a list of all files that start with the stem, ignore the rest
+	FileList = [File for File in os.listdir( DirPath) if File.find( Stem) == 0]
+	return (len( FileList ))
+#	for WorkDir in FileList:
+#	    Pid = WorkDir[len( Stem):]			# get the Pid for this 1
+#	    if (os.path.exists( "/proc/"+Pid) == 1):	# process is alive
+#			return( 1)
+#	    else:			# process is gone, but old stem remains
+#					# mark it stale and continue
+#		os.rename( DirPath+"/"+WorkDir, DirPath+"/.stale"+WorkDir)
+#		return( 0)
+#	else:
+#	    return( 0)
+
+#################################################################################
+########  Main program  #########################################################
+#################################################################################
+ 
+#-------------------------------------------------------------------------------
+# If no parameters have been specified, print a short help line and exit.
+#
+if ( (len( sys.argv) == 1) | (len( sys.argv) > 5)):
+	### do this any time required arguments are missing
+	PrintHelpBanner()
+	sys.exit( 0)
+
+#-------------------------------------------------------------------------------
+# Setup initial condition
+#
+(FeiServer, FeiFileType)       = sys.argv[1].split(':')
+FileName	= sys.argv[2]
+### make the following optional
+QueRoot         = sys.argv[3]
+LogDir          = sys.argv[4]
+
+#-------------------------------------------------------------------------------
+# Check if input file exists
+#
+
+if (os.path.exists( FileName) == 0):
+	print "Error-SasFeiReplace-Input file does not exist: ", FileName
+	sys.exit( 1)
+
+#-------------------------------------------------------------------------------
+# Setup staging directory. If it does not exist, make it and start FeiBatchAdd
+# If it already exists, then check to make sure the FeiBatchAdd still running
+# Then drop the input file into the staging directory
+#
+
+StagingDir      = QueRoot+"/"+FeiServer+"/"+FeiFileType	# make subdirectories
+if (os.path.exists( StagingDir) == 0):	# Need to create it
+	os.makedirs ( StagingDir)
+
+if (IsDaemonRunning( "/tmp", FeiServer, FeiFileType ) == 0):
+		StartJavaDaemon( QueRoot, FeiServer, FeiFileType, LogDir)
+
+print "Moving ", FileName, " to ", StagingDir+"/"+FileName
+
+# a move might surprise the user by removing his original file
+#shutil.move( FileName, StagingDir+"/")
+# symlink requires source directory processing for sourcefile
+#os.symlink( FileName, StagingDir+"/"+FileName)
+
+os.link( FileName, StagingDir+"/"+FileName)
+sys.exit(0)
+########  EOP  #################################################################

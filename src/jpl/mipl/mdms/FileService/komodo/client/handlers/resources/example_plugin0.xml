@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Copyright (c) 2008 Jet Propulsion Laboratory, California Institute of Technology
+   All rights reserved
+   US Government Sponsorship acknowledged. 09-08-2008.
+
+   Example plugin handler descriptor
+     
+   @author N. Toole
+   @version $Id: example_plugin0.xml,v 1.1 2008/08/12 16:03:19 ntt Exp $
+-->
+<fei:handlerplugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fei="http://mdms.jpl.nasa.gov/schema/pluginhandler" xsi:schemaLocation="http://mdms.jpl.nasa.gov/schema/pluginhandler http://mdms.jpl.nasa.gov/schema/fei/fileventhandlerplugin.xsd">
+    <fei:name>MSL Database Tracking Handler</fei:name>
+    <fei:id>fei.msl.remote.db.handler</fei:id>
+    <fei:version>1.0.0</fei:version>
+    <fei:description>MSL Database Tracking Handler</fei:description>
+    <fei:org>gov.nasa.jpl.mipl.mdms.fei</fei:org>
+    <fei:handler>
+        <fei:implementation>jpl.mipl.msl.mdms.database.hack</fei:implementation>
+        <fei:properties> 
+            <fei:property name="max.memory.usage"  value="1000" desc="max memory to use, in megs"/>
+            <fei:property name="properties.file" value="file://url/to/props/file" desc="proprties file for this plugin"/>
+        </fei:properties>
+    </fei:handler>    
+</fei:handlerplugin>

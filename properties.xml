@@ -1,0 +1,193 @@
+<!--:mode=ant -->
+<!-- ========================================================== -->
+<!-- ugly things -->
+<!-- ========================================================== -->
+
+<!-- ========================================================== -->
+<!-- Load Environment Variables                                 -->
+<!-- ========================================================== -->
+<!-- #Load environment variables -->
+<property environment="env"/>
+
+        <!-- make sure that the ANT_HOME variable is set to a property -->
+<property name="ant.home" value="${env.ANT_HOME}"/>
+
+<property name="env.COMPUTERNAME" value="${env.HOSTNAME}"/>
+
+        <!-- ========================================================== -->
+        <!-- Load property files                                        -->
+        <!--   Note: the ordering is VERY important.                    -->
+        <!-- ========================================================== -->
+        <!-- #Allow even users property file to relocate -->
+<property name="user.properties.file"
+          location="${user.home}/.build.properties"/>
+
+        <!-- Load the application specific settings -->
+        <!-- #Project specific props -->
+<property file="build.properties"/>
+
+        <!-- Load user specific settings -->
+        <!-- #User specific properties (username/password, etc) -->
+<property file="${user.properties.file}"/>
+
+        <!-- ========================================================== -->
+        <!-- Directory mappings                                         -->
+        <!-- ========================================================== -->
+        <!-- #Note use of 'location' -->
+<property name="root.dir" location="${basedir}"/>
+<property name="masterbuild.dir" location="${root.dir}"/>
+<property file="${masterbuild.dir}/build.properties"/>
+
+<property name="src.dir" location="${root.dir}/src"/>
+<property name="build.dir" location="build"/>
+<property name="build.classes.dir"
+          location="${build.dir}/classes"/>
+<property name="dist.dir" location="dist"/>
+<property name="generated.dir" location="generated"/>
+<property name="doc.dir" location="doc"/>
+<property name="javadoc.dir" location="${doc.dir}/javadoc"/>
+<property name="lib.dir" location="${masterbuild.dir}/lib"/>
+<property name="etc.dir" location="${root.dir}/etc"/>
+<property name="checkstyle.config.dir" location="${etc.dir}/checkstyle"/>
+<property name="resources.dir" location="${root.dir}/resources"/>
+
+        <!-- ========================================================== -->
+        <!-- Compile settings                                           -->
+        <!-- ========================================================== -->
+        <!-- #Typical defaults for javac -->
+<property name="build.debug" value="true"/>
+<property name="build.optimize" value="false"/>
+<property name="build.deprecation" value="true"/>
+
+        <!-- ========================================================== -->
+        <!-- Test settings                                              -->
+        <!-- ========================================================== -->
+<property name="test.dir" location="${build.dir}/test"/>
+<property name="test.classes.dir" location="${test.dir}/classes"/>
+<property name="test.data.dir" location="${test.dir}/data"/>
+<property name="test.reports.dir" location="${test.dir}/reports"/>
+<property name="test.src.dir" location="${test.dir}/src"/>
+<property name="test.last.failed.file"
+          location="${build.dir}/.lasttestsfailed"/>
+
+
+        <!-- ========================================================== -->
+        <!-- Library dependency settings                                -->
+        <!-- ========================================================== -->
+        <!-- #Library indirection -->
+<property name="lib.properties.file"
+          location="${lib.dir}/lib.properties"/>
+
+        <!-- #lib.properties.file contains .version props -->
+<property file="${lib.properties.file}"/>
+
+<property name="java.dir" location="${env.JAVA_HOME}"/>
+
+        <!-- JAR file mappings -->
+        <!-- #mappings directly to jar files -->
+<property name="checkstyle.jar.filename"
+          value="checkstyle-all-${checkstyle.version}.jar"/>
+<property name="checkstyle.jar"
+          location="${lib.dir}/${checkstyle.jar.filename}"/>
+<property name="junit.jar.filename"
+          value="junit-${junit.version}.jar"/>
+<property name="junit.jar"
+          location="${lib.dir}/${junit.jar.filename}"/>
+<property name="log4j.jar.filename"
+          value="log4j-${log4j.version}.jar"/>
+<property name="log4j.jar"
+          location="${lib.dir}/${log4j.jar.filename}"/>
+<property name="dom4j.jar.filename"
+          value="dom4j-${dom4j.version}.jar"/>
+<property name="dom4j.jar"
+          location="${lib.dir}/${dom4j.jar.filename}"/>
+<property name="jaxen.jar.filename"
+          value="jaxen-${jaxen.version}.jar"/>
+<property name="jaxen.jar"
+          location="${lib.dir}/${jaxen.jar.filename}"/>
+<property name="xdoclet.jar.filename"
+          value="xdoclet-${xdoclet.version}.jar"/>
+<property name="xdoclet.jar"
+          location="${lib.dir}/${xdoclet.jar.filename}"/>
+<property name="xdoclet-ejb.jar.filename"
+          value="xdoclet-ejb-module-${xdoclet.version}.jar"/>
+<property name="xdoclet-ejb.jar"
+          location="${lib.dir}/${xdoclet-ejb.jar.filename}"/>
+<property name="xdoclet-java.jar.filename"
+          value="xdoclet-java-module-${xdoclet.version}.jar"/>
+<property name="xdoclet-java.jar"
+          location="${lib.dir}/${xdoclet-java.jar.filename}"/>
+<property name="xdoclet-jmx.jar.filename"
+          value="xdoclet-jmx-module-${xdoclet.version}.jar"/>
+<property name="xdoclet-jmx.jar"
+          location="${lib.dir}/${xdoclet-jmx.jar.filename}"/>
+<property name="xdoclet-mockobjects.jar.filename"
+          value="xdoclet-mockobjects-module-${xdoclet.version}.jar"/>
+<property name="xdoclet-mockobjects.jar"
+          location="${lib.dir}/${xdoclet-mockobjects.jar.filename}"/>
+<property name="xdoclet-web.jar.filename"
+          value="xdoclet-web-module-${xdoclet.version}.jar"/>
+<property name="xdoclet-web.jar"
+          location="${lib.dir}/${xdoclet-web.jar.filename}"/>
+<property name="xdoclet-xdoclet.jar.filename"
+          value="xdoclet-xdoclet-module-${xdoclet.version}.jar"/>
+<property name="xdoclet-xdoclet.jar"
+          location="${lib.dir}/${xdoclet-xdoclet.jar.filename}"/>
+<property name="xdoclet-xjavadoc.jar.filename"
+          value="xdoclet-xjavadoc-${xdoclet.version}.jar"/>
+<property name="xdoclet-xjavadoc.jar"
+          location="${lib.dir}/${xdoclet-xjavadoc.jar.filename}"/>
+<property name="xercesImpl.jar.filename"
+          value="xercesImpl-${xerces.version}.jar"/>
+<property name="xercesImpl.jar"
+          location="${lib.dir}/${xercesImpl.jar.filename}"/>
+<property name="xmlParser.jar.filename"
+          value="xmlParserAPIs-${xerces.version}.jar"/>
+<property name="xmlParser.jar"
+          location="${lib.dir}/${xmlParser.jar.filename}"/>
+<property name="mail.jar"
+          location="${lib.dir}/${mail.jar.filename}"/>
+<property name="activation.jar"
+          location="${lib.dir}/${activation.jar.filename}"/>
+<property name="mail.jar.filename"
+          value="javamail-${javamail.version}.jar"/>
+<property name="javamail.jar"
+          location="${lib.dir}/${mail.jar.filename}"/>
+<property name="activation.jar.filename"
+          value="jaf-${jaf.version}.jar"/>
+<property name="jaf.jar"
+          location="${lib.dir}/${activation.jar.filename}"/>
+<property name="ant.jar.filename"
+          value="ant-${local.ant.version}.jar"/>
+<property name="ant.jar"
+          location="${lib.dir}/${ant.jar.filename}"/>
+<property name="javancss-ccl.jar.filename"
+          value="javancss-ccl-${javancss.version}.jar"/>
+<property name="javancss-ccl.jar"
+          location="${lib.dir}/${javancss-ccl.jar.filename}"/>
+<property name="javancss.jar.filename"
+          value="javancss-${javancss.version}.jar"/>
+<property name="javancss.jar"
+          location="${lib.dir}/${javancss.jar.filename}"/>
+<property name="javancss-jhbasic.jar.filename"
+          value="javancss-jhbasic-${javancss.version}.jar"/>
+<property name="javancss-jhbasic.jar"
+          location="${lib.dir}/${javancss-jhbasic.jar.filename}"/>
+<property name="emma.jar.filename"
+          value="emma-${emma.version}.jar"/>
+<property name="emma.jar"
+          value="${lib.dir}/${emma.jar.filename}"/>
+<property name="emma_ant.jar.filename"
+          value="emma_ant-${emma_ant.version}.jar"/>
+<property name="emma_ant.jar"
+          value="${lib.dir}/${emma_ant.jar.filename}"/>
+
+        <!-- ========================================================== -->
+        <!-- xml logger config                                          -->
+        <!-- ========================================================== -->
+
+<property name="logs.dir" location="${build.dir}/logs"/>
+
+        <!--   <property name="ant.XmlLogger.stylesheet.uri"
+             location="${ant.home}/etc/log.xsl" />  -->
+

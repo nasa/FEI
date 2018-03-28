@@ -1,0 +1,60 @@
+#!/usr/bin/perl -w
+# -*-Perl-*-
+#
+### ==================================================================== ###
+#                                                                          #
+#  MDMS Password Server Client Utility                                     #
+#                                                                          #
+#  Function:                                                               # 
+#  Simple utility to request a database password from the MDMS Password    #
+#  Server.  The client must supply user and server names and have a valid  #
+#  Kerberos credential to decrypt the password.                            #
+#                                                                          #
+#  Assumptions:                                                            #
+#  - Perl 5 is installed on the target platform in /usr/bin/perl           #
+#  - The target platform uses ":" as a classpath separator or perl         #
+#    indicates it is dos/win32.                                            #
+#  - The target platform uses "/" as a directory separator.                #  
+#                                                                          #
+#  Copyright (c) 2006 by the California Institute of Technology.      #
+#  ALL RIGHTS RESERVED.  United States Government Sponsorship         #
+#  acknowledged. Any commercial use must be negotiated with the       #
+#  Office of Technology at the California Institute of Technology.    #
+#                                                                     #
+#  The technical data in this document (or file) is controlled for    #
+#  export under the Export Administration Regulations (EAR), 15 CFR,  #
+#  Parts 730-774. Violations of these laws are subject to fines and   #
+#  penalties under the Export Administration Act.                     #
+#                                                                          #
+#                                                                          #
+#  Created:                                                                # 
+#  Mar. 22, 2004 by Rich Pavlovsky {rich.pavlovsky@jpl.nasa.gov}           #
+#                                                                          #
+#  Modifications:                                                          # 
+#                                                                          #
+### ==================================================================== ###
+#
+# $Id: pwdclient,v 1.6 2006/10/03 02:18:19 ntt Exp $
+#
+
+use strict;
+use File::Spec;
+die "[ERROR] FEI5 environment variable is not set.\n" unless $ENV{FEI5};
+require File::Spec->catdir($ENV{FEI5}, 'mdmsconfig.pm');
+
+#umask 077;
+
+#set $debug to 1 to turn on trace info
+my $debug=0;
+
+my $javaCmd = &getCmd ($debug);
+my $classpath = $ENV{CLASSPATH} ? $ENV{CLASSPATH} : "";
+my @args = &getJVMArgs($classpath, $debug);
+
+push @args, "-Dmdms.user.operation=mdms.util.pwdclient";
+push @args, "jpl.mipl.mdms.pwdclient.PWDClient";
+push @args, @ARGV;
+
+print "\n $javaCmd @args\n\n" if ($debug);
+my $returnValue = system $javaCmd, @args;
+exit $returnValue >> 8;

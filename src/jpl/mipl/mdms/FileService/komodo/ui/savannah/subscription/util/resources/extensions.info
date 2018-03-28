@@ -1,0 +1,15 @@
+# -----------------------------------------------------------------------------
+# Extensions info file.  This file links extension point ids with
+# an name of the associated configuration info class.
+# This is a default extensions file.  To extend, create a new
+# file, and supply its location as the value of the property
+# 'komodo.extensions.info'.
+#
+# $Id: extensions.info,v 1.3 2008/09/05 19:09:42 ntt Exp $
+# -----------------------------------------------------------------------------
+
+# Savannah subscription handlers use HandlerSetInfo class
+jpl.mipl.mdms.FileService.komodo.ui.savannah.subscription.handlers = jpl.mipl.mdms.FileService.komodo.ui.savannah.subscription.util.HandlerSetInfo
+
+# Handlers for generic file gets/subscriptions/notifications
+jpl.mipl.mdms.FileService.komodo.file.handlers = jpl.mipl.mdms.FileService.komodo.util.subscription.FileEventHandlerSetInfo

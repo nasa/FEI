@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<!-- CVS: $Id: sybaseInterface.xml,v 1.1.1.1 2003/01/25 02:18:52 txh Exp $ -->
+
+<!-- MDMS XML interface to relational database back-end. -->
+
+<!-- Copyright 2001, California Institute of Technology. -->
+<!-- ALL RIGHTS RESERVED.                                -->
+<!-- U.S. Government Sponsorship acknowledge. 6/29/2000. -->
+<!-- MIPL Data Management System (MDMS).                 -->
+
+<database xmlns:xsi="http://www.w3.org/1999/XMLSchema/instance"
+    xmlns="http://sorrento.jpl.nasa.gov"
+    xsi:schemaLocation="http://sorrento.jpl.nasa.gov/schema/dbInterface.xsd"
+>
+    <connection title="Sybase JDBC and JNDI Connection Parameters">
+        <jdbc>
+            <driver>
+                com.sybase.jdbc2.jdbc.SybDriver
+            </driver>
+            <url>
+                jdbc:sybase:Tds:@host:@port
+            </url>
+        </jdbc>
+        <jndi>
+            <host>
+                @host
+            </host>
+            <port>
+                @port
+            </port>
+            <searchBase>
+                dc=mdms,dc=jpl,dc=nasa,dc=gov
+            </searchBase>
+        </jndi>
+    </connection>
+
+    <setup>
+        <defineTables>
+            <prep>
+                if exists (select * from sysobjects where name = 'simpleTable') drop table simpleTable
+            </prep>
+            <statement>
+                create table simpleTable (roleIdx numeric(10,0) identity, name varchar(30) not null, getFlag bit not null, addFlag bit not null, deleteFlag bit not null, replaceFlag bit not null, proprietaryGet bit not null, description varchar(120) null, constraint accessRolesPK1 primary key (roleIdx))
+            </statement>
+        </defineTables>
+        <defineProcedures>
+            <prep>
+                if exists (select * from sysobjects where name = 'simpleProc') drop procedure simpleProc
+            </prep>
+            <statement>
+                create procedure simpleProc @name varchar(30), @getFlag bit = 1, @addFlag bit = 0, @rplFlag bit = 0, @delFlag bit = 0, @proprietaryGet bit = 0, @description varchar(120) = null as begin insert into simpleTable (name, getFlag, addFlag, deleteFlag, replaceFlag, proprietaryGet, description) values (@name, @getFlag, @addFlag, @delFlag, @rplFlag, @proprietaryGet, @description) end
+            </statement>
+        </defineProcedures>
+    </setup>
+
+    <showRecords>
+        <statement>
+            select @list from @table
+        </statement>
+    </showRecords>
+
+    <deleteRecord>
+        <statement>
+            delete from @table where @list
+        </statement>
+    </deleteRecord>
+
+    <simpleProc>
+        <procedure>
+            simpleProc '@name', @getFlag, @addFlag, @delFlag, @rplFlag, @proprietaryGet, '@description'
+        </procedure>
+    </simpleProc>
+
+    <cleanup>
+        <dropTables>
+            <statement>
+                if exists (select * from sysobjects where name = 'simpleTable') drop table simpleTable
+            </statement>
+        </dropTables>
+        <dropProcedures>
+            <statement>
+                if exists (select * from sysobjects where name = 'simpleProc') drop procedure simpleProc
+            </statement>
+        </dropProcedures>
+    </cleanup>
+</database>

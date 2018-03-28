@@ -1,0 +1,46 @@
+<!--:mode=ant -->
+<!-- xdoclet.classpath needs all classes used by our code that
+     is being run through XDoclet tasks in order to avoid warnings
+     and ensure all subclasses are picked up appropriately.
+-->
+<path id="xdoclet.classpath">
+    <pathelement location="${log4j.jar}"/>
+    <pathelement location="${xdoclet.jar}"/>
+    <pathelement location="${xdoclet-ejb.jar}"/>
+    <pathelement location="${xdoclet-java.jar}"/>
+    <pathelement location="${xdoclet-jmx.jar}"/>
+    <pathelement location="${xdoclet-mockobjects.jar}"/>
+    <pathelement location="${xdoclet-web.jar}"/>
+    <pathelement location="${xdoclet-xdoclet.jar}"/>
+    <pathelement location="${xdoclet-xjavadoc.jar}"/>
+    <!-- javadoc is needed -->
+    <pathelement path="${java.class.path}"/>
+</path>
+
+<taskdef name="todo"
+         classname="xdoclet.modules.doc.DocumentDocletTask"
+         classpathref="xdoclet.classpath"/>
+
+
+        <!-- Checkstyle definitions -->
+<path id="checkstyle.classpath">
+<pathelement location="${checkstyle.jar}"/>
+</path>
+
+<taskdef resource="checkstyletask.properties"
+         classpathref="checkstyle.classpath"/>
+
+        <!-- JavaNCSS definitions -->
+<path id="javancss.classpath">
+<pathelement location="${javancss.jar}"/>
+<pathelement location="${javancss-ccl.jar}"/>
+<pathelement location="${javancss-jhbasic.jar}"/>
+</path>
+
+<taskdef name="javancss"
+         classname="javancss.JavancssAntTask">
+<classpath refid="javancss.classpath"/>
+</taskdef>
+
+
+

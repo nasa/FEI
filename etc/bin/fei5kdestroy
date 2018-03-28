@@ -1,0 +1,57 @@
+#!/usr/bin/perl -w
+#
+### =============================================================== ###
+#                                                                     #
+#  The File Exchange Interface (FEI) Destroy Credentials Client       #
+#                                                                     #
+#  Function:                                                          #
+#  Destroys FEI5 user credentials.                                    #
+#                                                                     #
+#  Assumptions:                                                       #
+#  - Perl 5 is installed on the target platform in /usr/bin/perl      #
+#  - The $FEI5 environment variable must point to the directory       #
+#    containing the domain.fei, the SSL certificate, and              #
+#    mdmsconfig.pm files.                                             #
+#                                                                     #
+#  Copyright (c) 2006 by the California Institute of Technology.      #
+#  ALL RIGHTS RESERVED.  United States Government Sponsorship         #
+#  acknowledged. Any commercial use must be negotiated with the       #
+#  Office of Technology at the California Institute of Technology.    #
+#                                                                     #
+#  The technical data in this document (or file) is controlled for    #
+#  export under the Export Administration Regulations (EAR), 15 CFR,  #
+#  Parts 730-774. Violations of these laws are subject to fines and   #
+#  penalties under the Export Administration Act.                     #
+#                                                                     #
+#                                                                     #
+#  Created:                                                           #
+#  Oct. 21, 2004 by T. Huang {Thomas.Huang@jpl.nasa.gov}              #
+#                                                                     #
+#  Modifications:                                                     #
+#                                                                     #
+### =============================================================== ###
+#
+# $Id: fei5kdestroy,v 1.12 2006/10/03 02:18:18 ntt Exp $
+#
+
+use strict;
+use File::Spec;
+die "[ERROR] FEI5 environment variable is not set.\n" unless $ENV{FEI5};
+require File::Spec->catdir($ENV{FEI5}, 'mdmsconfig.pm');
+
+umask 077;
+
+#set $debug to 1 to turn on trace info
+my $debug=0;
+
+my $javaCmd = &getCmd ($debug);
+my $classpath = $ENV{CLASSPATH} ? $ENV{CLASSPATH} : "";
+my @args = &getJVMArgs($classpath, $debug);
+                                                                              
+push @args, "-Dmdms.user.operation=komodo.util.logout";
+push @args, "jpl.mipl.mdms.FileService.komodo.client.UtilClient";
+push @args, @ARGV;
+                                                                              
+print "\n $javaCmd @args\n\n" if ($debug);
+my $returnValue = system $javaCmd, @args;
+exit $returnValue >> 8;
