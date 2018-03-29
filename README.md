@@ -12,6 +12,9 @@ Client Only Repository
 
 **mdms.jar**
 1. `jpl/mipl/mdms/utils/TFAAuthUser.class`
+2. `jpl/mipl/mdms/utils/SchemaMigration.class`
+3. `jpl/mipl/mdms/utils/SecretKeyGenerator.class`
+4. `jpl/mipl/mdms/utils/ImportKey.class`
 
 **mdms-komodo-client.jar**
 *none*
