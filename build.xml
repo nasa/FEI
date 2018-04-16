@@ -344,19 +344,6 @@
                          value="${src.dir}/jpl/mipl/mdms/FileService/komodo/client/resources/clienthelp.xml"/>
             <sysproperty key="help.xsd.file"
                          value="${src.dir}/jpl/mipl/mdms/FileService/komodo/client/resources/clienthelp.xsd"/>
-            <sysproperty key="pwd.dbusrname" value="mdmstest"/>
-            <sysproperty key="pwd.dbsrvname" value="miplDev"/>
-            <sysproperty key="pwd.dbpwd" value="mdmsPas$word"/>
-            <sysproperty key="pwd.pwdsrvname" value="DEVPwdSrv"/>
-            <sysproperty key="pwd.pwdsrvhost" value="panther.jpl.nasa.gov"/>
-            <sysproperty key="pwd.pwdsrvport" value="43300"/>
-            <sysproperty key="pwd.krbrealm" value="MIPS-DEV.JPL.NASA.GOV"/>
-            <sysproperty key="pwd.krbkdc" value="miplauth-dev.jpl.nasa.gov"/>
-            <sysproperty key="pwd.krbpwd" value="mdms388"/>
-            <sysproperty key="pwd.conffile"
-                         value="${etc.dir}/config/pwdclientnotktcache.conf"/>
-            <sysproperty key="jdbc.url"
-                         value="jdbc:sybase:Tds:mipldb-dev.jpl.nasa.gov:1040"/>
             <sysproperty key="conn.acceptorhost" value="localhost"/>
             <sysproperty key="conn.acceptorport" value="51111"/>
             <sysproperty key="conn.acceptorinput" value="${test.dir}/conn.input"/>
@@ -568,8 +555,7 @@
                         prefix="fei5/doc/pdf">
                 <include name="komodo**.pdf"/>
             </tarfileset>
-            <tarfileset dir="${etc.dir}/config" includes="domain.fei, pwdinterface,
-            pwdclient.conf, krb5.conf, mdmsconfig.pm, mdmsconfig.sh, mdms.lcf,
+            <tarfileset dir="${etc.dir}/config" includes="domain.fei, mdmsconfig.pm, mdmsconfig.sh, mdms.lcf,
             mdmsgui.lcf" mode="644" prefix="fei5/config"/>
             <tarfileset dir="${etc.dir}/ssl" includes="mdms-fei.keystore, public.der"
                         mode="644" prefix="fei5/config"/>
@@ -606,8 +592,8 @@
                 <include name="komodo**.pdf"/>
             </zipfileset>
             <!-- Use GIT config files -->
-            <zipfileset dir="${etc.dir}/config" includes="domain.fei, pwdinterface,
-            pwdclient.conf, krb5.conf, appKSRV.bat, mdmsconfig.bat, mdms.lcf,
+            <zipfileset dir="${etc.dir}/config" includes="domain.fei,
+            pwdclient.conf, appKSRV.bat, mdmsconfig.bat, mdms.lcf,
             mdmsgui.lcf" prefix="fei5/config"/>
             <zipfileset
                     dir="${src.dir}/jpl/mipl/mdms/FileService/komodo/api/resources"
