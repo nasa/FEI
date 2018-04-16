@@ -16,7 +16,7 @@
 #  of Commerce has classified the FEI Client 5 Software as EAR 99,         #
 #  which means that the software may be distributed to any country         #
 #  except the Terrorist 6.  The Terrorist 6 Countries include North        #
-#  Korea, Cuba, Iran, Syria, Sudan and Libya.                              #  
+#  Korea, Cuba, Iran, Syria, Sudan and Libya.                              #
 #                                                                          #
 #                                                                          #
 #  Created:                                                                #
@@ -31,7 +31,6 @@
 #
 
 setenv FEI5 ${cwd}/config
-#setenv KRB5_CONFIG ${FEI5}/krb5.conf
 #setenv PWDSERVER ${FEI5}
 setenv PATH ${FEI5}/../bin:${PATH}
 setenv JAVA_NAMING_HOST mdms.jpl.nasa.gov
