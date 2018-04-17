@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Development FEI Domain File
+
+   Copyright (c) 2018 by the California Institute of Technology.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+   @author A. Tinio {Adrian.Tinio@jpl.nasa.gov}
+-->
+<fei:domain xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fei="http://mdms.jpl.nasa.gov/schema/fei" xsi:schemaLocation="http://mdms.jpl.nasa.gov/schema/fei http://mdms.jpl.nasa.gov/schema/fei/domain.xsd">
+    <fei:defaultGroup>[--DEFAULT-SERVERGROUP--]</fei:defaultGroup>
+    <fei:group name="[--SERVERGROUP-NAME--]">
+        <fei:server name="[--SERVER1 NAME--]">
+            <fei:host>[--SERVER1-HOST--]</fei:host>
+            <fei:port>[--SERVER1-PORT--]</fei:port>
+            <fei:auth>SHA1</fei:auth>
+            <fei:communication>SSL</fei:communication>
+        </fei:server>
+        <fei:server name="[--SERVER2 NAME--]">
+            <fei:host>[--SERVER2-HOST--]</fei:host>
+            <fei:port>[--SERVER2-PORT--]</fei:port>
+            <fei:auth>SHA1</fei:auth>
+            <fei:communication>SSL</fei:communication>
+        </fei:server>
+        <fei:server name="[--SERVERN NAME--]">
+            <fei:host>[--SERVERN-HOST--]</fei:host>
+            <fei:port>[--SERVERN-PORT--]</fei:port>
+            <fei:auth>SHA1</fei:auth>
+            <fei:communication>SSL</fei:communication>
+        </fei:server>
+        <fei:vft>
+            <fei:host>[--VFT-HOST--]</fei:host>
+            <fei:port>[--VFT-PORT--]</fei:port>
+            <fei:auth>SHA1</fei:auth>
+            <fei:communication>SSL</fei:communication>
+        </fei:vft>
+        <fei:fileType>[--FILETYPE1-NAME]</fei:fileType>
+        <fei:fileType>[--FILETYPE2-NAME]</fei:fileType>
+        <fei:fileType>[--FILETYPEN-NAME]</fei:fileType>
+    </fei:group>
+</fei:domain>

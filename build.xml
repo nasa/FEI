@@ -41,7 +41,6 @@
     <property name="mdms-komodo-client.tar.filename" value="mdms-fei5.tar"/>
     <property name="mdms-komodo-client.zip.filename" value="mdms-fei5.zip"/>
     <property name="fei.domain.file" value="${etc.dir}/config/domain.fei"/>
-    <property name="fei.trust.store" value="${etc.dir}/ssl/mdms-fei.keystore"/>
     <property name="komodo.public.key" value="${etc.dir}/ssl/public.der"/>
 
     <!--=======================================================================-->
@@ -129,19 +128,12 @@
     <target name="compile" depends="init, compile-mdms"
             description="Compiles MDMS source code (NOTE: Java source code only)."/>
 
-    <target name="package" depends="signlibs, compile, package-mdms-jar,
+    <target name="package" depends="compile, package-mdms-jar,
       package-mdms-komodo-lib-jar,      package-mdms-komodo-client-jar,
       package-mdms-komodo-client-tar,
       package-mdms-komodo-client-zip" description="Packages
       compiled code into JAR, TAR, WAR and EAR distributables."/>
-    <target name="signlibs" description="Lazily sign third party libraries/jars">
-        <signjar alias="mdms" keystore="${etc.dir}/ssl/mdms-code-signing.keystore"
-                 storepass="mdms-dev" lazy="true">
-            <path>
-                <fileset dir="${lib.dir}" includes="**/*.jar"/>
-            </path>
-        </signjar>
-    </target>
+
     <target name="document" depends="javadoc, checkstyle, javancss"
             description="Documents source code (NOTE: This may be time consuming)."/>
     <target name="test" depends="compile, test-init, test-compile, test-run"
@@ -267,14 +259,6 @@
                 <date datetime="${mdms.lastbuild}" when="after"/>
             </fileset>
         </copy>
-        <!-- FEI the file -->
-        <fei userid="${fei.userid}" password="${fei.password}" serverGroup="build"
-             filetype="build_logs" comment="MDMS build log ${buildtime}"
-             domainfile="${fei.domain.file}" truststore="${fei.trust.store}">
-            <fileset dir="${build.dir}">
-                <include name="log*xml"/>
-            </fileset>
-        </fei>
     </target>
     <target name="test-init" depends="init">
         <mkdir dir="${test.dir}/output"/>
@@ -320,8 +304,6 @@
                          value="${src.dir}/jpl/mipl/mdms/FileServer/komodo/api/resources/domain.xsd"/>
             <sysproperty key="fei.domain.url"
                          value="file://${fei.domain.file}"/>
-            <sysproperty key="fei.trust.store"
-                         value="${etc.dir}/ssl/mdms-fei.keystore"/>
             <sysproperty key="komodo.public.key"
                          value="${etc.dir}/ssl/public.der"/>
             <sysproperty key="fei.test.file.1"
@@ -497,9 +479,7 @@
                 <exclude name="pds/**"/>
             </fileset>
         </jar>
-        <signjar jar="${dist.dir}/${mdms.jar.filename}"
-                 keystore="${etc.dir}/ssl/mdms-code-signing.keystore"
-                 alias="mdms" storepass="mdms-dev"/>
+
     </target>
     <target name="package-mdms-komodo-lib-jar" depends="compile, package-init">
         <jar jarfile="${dist.dir}/${mdms-komodo-lib.jar.filename}" compress="true">
@@ -514,9 +494,7 @@
                 <include name="jpl/mipl/mdms/FileService/komodo/xml/**"/>
             </fileset>
         </jar>
-        <signjar jar="${dist.dir}/${mdms-komodo-lib.jar.filename}"
-                 keystore="${etc.dir}/ssl/mdms-code-signing.keystore"
-                 alias="mdms" storepass="mdms-dev"/>
+
     </target>
     <target name="package-mdms-komodo-client-jar" depends="compile, package-init">
         <jar jarfile="${dist.dir}/${mdms-komodo-client.jar.filename}"
@@ -528,9 +506,7 @@
                 <exclude name="jpl/mipl/mdms/FileService/komodo/client/handlers/examples/**"/>
             </fileset>
         </jar>
-        <signjar jar="${dist.dir}/${mdms-komodo-client.jar.filename}"
-                 keystore="${etc.dir}/ssl/mdms-code-signing.keystore"
-                 alias="mdms" storepass="mdms-dev"/>
+
     </target>
 
     <target name="package-mdms-komodo-client-tar"
@@ -592,8 +568,7 @@
                 <include name="komodo**.pdf"/>
             </zipfileset>
             <!-- Use GIT config files -->
-            <zipfileset dir="${etc.dir}/config" includes="domain.fei,
-            pwdclient.conf, appKSRV.bat, mdmsconfig.bat, mdms.lcf,
+            <zipfileset dir="${etc.dir}/config" includes="domain.fei, appKSRV.bat, mdmsconfig.bat, mdms.lcf,
             mdmsgui.lcf" prefix="fei5/config"/>
             <zipfileset
                     dir="${src.dir}/jpl/mipl/mdms/FileService/komodo/api/resources"
